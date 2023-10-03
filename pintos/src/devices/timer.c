@@ -7,6 +7,7 @@
 #include "threads/interrupt.h"
 #include "threads/synch.h"
 #include "threads/thread.h"
+#include <list.h>
   
 /* See [8254] for hardware details of the 8254 timer chip. */
 
@@ -92,8 +93,12 @@ timer_sleep (int64_t ticks)
   int64_t start = timer_ticks ();
 
   ASSERT (intr_get_level () == INTR_ON);
+  
+  /**************** Project 1-1 Alarm clock ***************/
   // while (timer_elapsed (start) < ticks) 
   //   thread_yield ();
+  thread_sleep(start + ticks);
+  /********************************************************/
 }
 
 /* Sleeps for approximately MS milliseconds.  Interrupts must be
@@ -172,6 +177,35 @@ timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
   thread_tick ();
+  
+  /**************** Project 1-1 Alarm clock ***************/
+  struct list *sleep_list = get_sleep_list();
+
+  // if(!list_empty(sleep_list)) {
+  //   struct list_elem *e = list_front(sleep_list);
+  //   while(e != list_end(sleep_list)){
+  //     struct thread *t = list_entry(e, struct thread, elem);
+  //     if(t->wake_tick <= ticks){
+  //       e = thread_wake(t);
+  //     }
+  //     else
+  //       break;
+  //   }
+  // }
+    while (!list_empty(sleep_list))
+    {
+        struct list_elem *e = list_front(sleep_list);
+        struct thread *t = list_entry(e, struct thread, elem);
+
+        if (t->wake_tick <= ticks)
+        {
+            list_pop_front(sleep_list);
+            thread_unblock(t);
+        }
+        else
+            break;
+    }
+    /********************************************************/
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer

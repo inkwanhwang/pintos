@@ -92,6 +92,9 @@ struct thread
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
+   /**************** Project 1-1 Alarm clock ***************/
+    int64_t wake_tick;
+   /********************************************************/
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
@@ -118,7 +121,11 @@ tid_t thread_create (const char *name, int priority, thread_func *, void *);
 
 void thread_block (void);
 void thread_unblock (struct thread *);
-
+  /**************** Project 1-1 Alarm clock ***************/
+void thread_sleep (int64_t);
+struct list_elem *thread_wake (struct thread *);
+struct list* get_sleep_list (void);
+  /********************************************************/
 struct thread *thread_current (void);
 tid_t thread_tid (void);
 const char *thread_name (void);
