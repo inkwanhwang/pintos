@@ -602,7 +602,6 @@ void thread_sleep (int64_t ticks) {
   old_level = intr_disable ();
   cur->wake_tick = ticks;
   list_insert_ordered(&sleep_list, &cur->elem, compare_tick, NULL);
-  printf("Here");
   thread_block();
   intr_set_level (old_level);
 }

@@ -180,32 +180,18 @@ timer_interrupt (struct intr_frame *args UNUSED)
   
   /**************** Project 1-1 Alarm clock ***************/
   struct list *sleep_list = get_sleep_list();
-
-  // if(!list_empty(sleep_list)) {
-  //   struct list_elem *e = list_front(sleep_list);
-  //   while(e != list_end(sleep_list)){
-  //     struct thread *t = list_entry(e, struct thread, elem);
-  //     if(t->wake_tick <= ticks){
-  //       e = thread_wake(t);
-  //     }
-  //     else
-  //       break;
-  //   }
-  // }
-    while (!list_empty(sleep_list))
-    {
-        struct list_elem *e = list_front(sleep_list);
-        struct thread *t = list_entry(e, struct thread, elem);
-
-        if (t->wake_tick <= ticks)
-        {
-            list_pop_front(sleep_list);
-            thread_unblock(t);
-        }
-        else
-            break;
-    }
-    /********************************************************/
+  struct list_elem *e = list_begin(sleep_list);
+  if(!list_empty(sleep_list)){
+    while(e != list_end(sleep_list) && !list_empty(sleep_list)){
+      struct thread *t = list_entry(e, struct thread, elem);
+      if(t->wake_tick <= ticks){
+        e = thread_wake(t);
+      }
+      else
+        break;
+    } 
+  }
+  /********************************************************/
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer
