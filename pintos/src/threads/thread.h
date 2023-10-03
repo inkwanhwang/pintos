@@ -94,7 +94,8 @@ struct thread
     struct list_elem elem;              /* List element. */
    /**************** Project 1-1 Alarm clock ***************/
     int64_t wake_tick;
-   /********************************************************/
+   /*********** Project 1-2 Priority Scheduling ************/
+   int initial_priority;
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
@@ -121,17 +122,19 @@ tid_t thread_create (const char *name, int priority, thread_func *, void *);
 
 void thread_block (void);
 void thread_unblock (struct thread *);
-  /**************** Project 1-1 Alarm clock ***************/
+/**************** Project 1-1 Alarm clock ***************/
 void thread_sleep (int64_t);
 struct list_elem *thread_wake (struct thread *);
 struct list* get_sleep_list (void);
-  /********************************************************/
+/********************************************************/
 struct thread *thread_current (void);
 tid_t thread_tid (void);
 const char *thread_name (void);
 
 void thread_exit (void) NO_RETURN;
 void thread_yield (void);
+/*********** Project 1-2 Priority Scheduling ************/
+void thread_preempt (void);
 
 /* Performs some operation on thread t, given auxiliary data AUX. */
 typedef void thread_action_func (struct thread *t, void *aux);

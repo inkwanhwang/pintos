@@ -73,8 +73,11 @@ static void *alloc_frame (struct thread *, size_t size);
 static void schedule (void);
 void thread_schedule_tail (struct thread *prev);
 static tid_t allocate_tid (void);
-  /**************** Project 1-1 Alarm clock ***************/
+/**************** Project 1-1 Alarm clock ***************/
 static bool compare_tick(const struct list_elem *, const struct list_elem*, void *aux);
+/*********** Project 1-2 Priority Scheduling ************/
+static bool compare_priority (const struct list_elem *, const struct list_elem *, void *aux);
+
 
 /* Initializes the threading system by transforming the code
    that's currently running into a thread.  This can't work in
@@ -208,6 +211,8 @@ thread_create (const char *name, int priority,
 
   /* Add to run queue. */
   thread_unblock (t);
+  /*********** Project 1-2 Priority Scheduling ************/
+  thread_preempt();
 
   return tid;
 }
@@ -245,7 +250,11 @@ thread_unblock (struct thread *t)
 
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
-  list_push_back (&ready_list, &t->elem);
+
+  /*********** Project 1-2 Priority Scheduling ************/
+  //list_push_back (&ready_list, &t->elem);
+  list_insert_ordered (&ready_list, &t->elem, compare_priority, NULL);
+
   t->status = THREAD_READY;
   intr_set_level (old_level);
 }
@@ -316,7 +325,10 @@ thread_yield (void)
 
   old_level = intr_disable ();
   if (cur != idle_thread) 
-    list_push_back (&ready_list, &cur->elem);
+    /*********** Project 1-2 Priority Scheduling ************/
+    //list_push_back (&ready_list, &cur->elem);
+    list_insert_ordered (&ready_list, &cur->elem, compare_priority, NULL);
+
   cur->status = THREAD_READY;
   schedule ();
   intr_set_level (old_level);
@@ -344,6 +356,7 @@ void
 thread_set_priority (int new_priority) 
 {
   thread_current ()->priority = new_priority;
+  thread_preempt();
 }
 
 /* Returns the current thread's priority. */
@@ -591,7 +604,7 @@ allocate_tid (void)
    Used by switch.S, which can't figure it out on its own. */
 uint32_t thread_stack_ofs = offsetof (struct thread, stack);
 
-  /**************** Project 1-1 Alarm clock ***************/
+/**************** Project 1-1 Alarm clock ***************/
 void thread_sleep (int64_t ticks) {
   struct thread *cur = thread_current ();
   enum intr_level old_level;
@@ -617,4 +630,19 @@ static bool compare_tick (const struct list_elem *e1, const struct list_elem *e2
   return list_entry(e1, struct thread, elem)->wake_tick
    < list_entry(e2, struct thread, elem)->wake_tick;
 }
-  /********************************************************/
+/********************************************************/
+
+/*********** Project 1-2 Priority Scheduling ************/  
+static bool compare_priority (const struct list_elem *e1, const struct list_elem *e2, void *aux UNUSED) {
+  return list_entry(e1, struct thread, elem)->priority
+   > list_entry(e2, struct thread, elem)->priority;
+}
+void thread_preempt (){
+  // Compare priority of running thread and ready_list.
+  // If running thread's is small, preempt its CPU.
+
+  if(list_empty(&ready_list)) return;
+  if(compare_priority(list_front(&ready_list), &thread_current()->elem, NULL)){
+    thread_yield();
+  }
+}
