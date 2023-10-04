@@ -76,7 +76,7 @@ static tid_t allocate_tid (void);
 /**************** Project 1-1 Alarm clock ***************/
 static bool compare_tick(const struct list_elem *, const struct list_elem*, void *aux);
 /*********** Project 1-2 Priority Scheduling ************/
-static bool compare_priority (const struct list_elem *, const struct list_elem *, void *aux);
+bool compare_priority (const struct list_elem *, const struct list_elem *, void *aux);
 
 
 /* Initializes the threading system by transforming the code
@@ -633,7 +633,7 @@ static bool compare_tick (const struct list_elem *e1, const struct list_elem *e2
 /********************************************************/
 
 /*********** Project 1-2 Priority Scheduling ************/  
-static bool compare_priority (const struct list_elem *e1, const struct list_elem *e2, void *aux UNUSED) {
+bool compare_priority (const struct list_elem *e1, const struct list_elem *e2, void *aux UNUSED) {
   return list_entry(e1, struct thread, elem)->priority
    > list_entry(e2, struct thread, elem)->priority;
 }

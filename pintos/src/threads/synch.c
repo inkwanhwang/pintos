@@ -113,9 +113,17 @@ sema_up (struct semaphore *sema)
   ASSERT (sema != NULL);
 
   old_level = intr_disable ();
-  if (!list_empty (&sema->waiters)) 
-    thread_unblock (list_entry (list_pop_front (&sema->waiters),
-                                struct thread, elem));
+  if (!list_empty (&sema->waiters))
+  {
+    /*********** Project 1-2 Priority Scheduling ************/
+    /*thread_unblock (list_entry (list_pop_front (&sema->waiters),
+                                struct thread, elem));*/
+    struct list_elem* e = list_max(&sema->waiters, compare_priority, NULL);
+    struct thread* t = list_entry(e, struct thread, elem);
+    list_remove(e);
+    thread_unblock(t);
+    /********************************************************/
+  }
   sema->value++;
   intr_set_level (old_level);
 }
