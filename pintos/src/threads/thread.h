@@ -96,7 +96,11 @@ struct thread
     int64_t wake_tick;
    /*********** Project 1-2 Priority Scheduling ************/
    int initial_priority;
-
+   /************ Project 1-2 Priority Donation *************/
+   struct list donators_list;
+   struct list_elem donators_elem;
+   struct lock *waiting_lock;
+   /********************************************************/
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
@@ -150,5 +154,6 @@ int thread_get_load_avg (void);
 
 /*********** Project 1-2 Priority Scheduling ************/
 bool compare_priority (const struct list_elem *, const struct list_elem *, void *aux);
+bool compare_priority_donators (struct list_elem *, struct list_elem *, void *aux);
 
 #endif /* threads/thread.h */

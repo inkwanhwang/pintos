@@ -355,7 +355,19 @@ thread_foreach (thread_action_func *func, void *aux)
 void
 thread_set_priority (int new_priority) 
 {
-  thread_current ()->priority = new_priority;
+  struct thread *cur_thread = thread_current();
+  cur_thread->initial_priority = new_priority;
+  cur_thread->priority = new_priority;
+
+  if (!list_empty(&cur_thread->donators_list))
+  {
+    int now_priority = cur_thread->priority;
+    struct list_elem *max_e = list_max(&thread_current()->donators_list, compare_priority, NULL);
+    struct thread *max_donator = list_entry(max_e, struct thread, donators_elem);
+    int max_donator_priority = max_donator->priority;
+
+    cur_thread->priority = (now_priority > max_donator_priority) ? now_priority : max_donator_priority;
+  }
   thread_preempt();
 }
 
@@ -484,7 +496,11 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
-
+/************ Project 1-2 Priority Donation *************/
+  t->initial_priority = priority;
+  list_init(&t->donators_list);
+  t->waiting_lock = NULL;
+/********************************************************/
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
   intr_set_level (old_level);
@@ -637,6 +653,7 @@ bool compare_priority (const struct list_elem *e1, const struct list_elem *e2, v
   return list_entry(e1, struct thread, elem)->priority
    > list_entry(e2, struct thread, elem)->priority;
 }
+
 void thread_preempt (){
   // Compare priority of running thread and ready_list.
   // If running thread's is small, preempt its CPU.
@@ -645,4 +662,12 @@ void thread_preempt (){
   if(compare_priority(list_front(&ready_list), &thread_current()->elem, NULL)){
     thread_yield();
   }
+}
+
+bool
+compare_priority_donators (struct list_elem *e1, struct list_elem *e2, void *aux UNUSED)
+{
+  int donator1_priority = list_entry(e1, struct thread, donators_elem)->priority;
+  int donator2_priority = list_entry(e2, struct thread, donators_elem)->priority;
+  return donator1_priority > donator2_priority;
 }
