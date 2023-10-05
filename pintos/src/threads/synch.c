@@ -261,7 +261,7 @@ lock_release (struct lock *lock)
 {
   ASSERT (lock != NULL);
   ASSERT (lock_held_by_current_thread (lock));
-
+  lock->holder = NULL;
   /*********** Project 1-3 Advanced Scheduler *************/ 
   if(!thread_mlfqs){
     /*********** Project 1-2 Priority Scheduling ************/
@@ -294,7 +294,6 @@ lock_release (struct lock *lock)
       else cur_thread->priority = cur_thread->initial_priority;
     }
     else cur_thread->priority = cur_thread->initial_priority;
-    lock->holder = NULL;
   }
   /********************************************************/
   sema_up (&lock->semaphore);

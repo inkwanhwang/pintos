@@ -390,6 +390,8 @@ thread_set_nice (int nice UNUSED)
 {
   intr_disable();
   thread_current()->niceness = nice;
+  mlfqs_set_priority(thread_current());
+  thread_preempt();
   intr_enable();
 }
 
@@ -410,7 +412,7 @@ thread_get_load_avg (void)
 {
   /*********** Project 1-3 Advanced Scheduler *************/
   intr_disable();
-  int return_load_avg = convert_x_to_int_round_off (mul_fp_int (load_avg, 100));
+  int return_load_avg = convert_x_to_int_round_off (mul_fp_int(load_avg, 100));
   intr_enable();
   return return_load_avg;
 }
@@ -719,9 +721,6 @@ mlfqs_set_priority(struct thread *t)
   if(new_priority >= PRI_MAX) t->priority = 63;
   else if(new_priority <= PRI_MIN) t->priority = 0;
   else t->priority = new_priority;
-  t->initial_priority = t->priority;
-
-  thread_preempt();
 }
 int
 mlfqs_cal_recent_cpu(struct thread *t)
@@ -743,12 +742,12 @@ mlfqs_cal_load_avg(){
   int ready_threads = ready_list_threads + is_not_idle();
 
   int first_term = div_fp_by_int(mul_fp_int(load_avg, 59), 60);
-  int second_term = convert_n_to_fp(ready_threads/60);
+  int second_term = div_fp_by_fp(convert_n_to_fp(ready_threads), convert_n_to_fp(60));
   return add_fp_fp(first_term, second_term);
 }
 void
 mlfqs_set_load_avg(){
-  load_avg = mlfqs_cal_load_avg(); // fp
+  load_avg = mlfqs_cal_load_avg();
 }
 bool
 is_not_idle()
@@ -760,25 +759,22 @@ void
 advanced_schedule(int ticks, int TIMER_FREQ)
 {
   struct thread *cur = thread_current();
-  if(is_not_idle())
+  if(is_not_idle()) cur->recent_cpu = add_fp_int(cur->recent_cpu, 1);
+  if(ticks%4 == 0)
   {
-    cur->recent_cpu += 1;
-
     struct list_elem *e;
-    if(ticks%4 == 0)
-    {
-      for (e = list_begin(&all_list); e != list_end(&all_list); e = list_next(e)){
-        struct thread *t = list_entry(e, struct thread, allelem);
-        mlfqs_set_priority(t);
-      }
+    for (e = list_begin(&all_list); e != list_end(&all_list); e = list_next(e)){
+      struct thread *t = list_entry(e, struct thread, allelem);
+      mlfqs_set_priority(t);
     }
-    if(ticks%TIMER_FREQ == 0)
-    {
-      for (e = list_begin(&all_list); e != list_end(&all_list); e = list_next(e)){
-        struct thread *t = list_entry(e, struct thread, allelem);
-        mlfqs_set_recent_cpu(t);
-      }
-      mlfqs_set_load_avg();
+  }
+  if(ticks%TIMER_FREQ == 0)
+  {
+    struct list_elem *e;
+    for (e = list_begin(&all_list); e != list_end(&all_list); e = list_next(e)){
+      struct thread *t = list_entry(e, struct thread, allelem);
+      mlfqs_set_recent_cpu(t);
     }
+    mlfqs_set_load_avg();
   }
 }
