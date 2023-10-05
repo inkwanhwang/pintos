@@ -388,31 +388,42 @@ thread_get_priority (void)
 void
 thread_set_nice (int nice UNUSED) 
 {
-  /* Not yet implemented. */
+  intr_disable();
+  thread_current()->niceness = nice;
+  intr_enable();
 }
 
 /* Returns the current thread's nice value. */
 int
 thread_get_nice (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+  /*********** Project 1-3 Advanced Scheduler *************/
+  intr_disable();
+  int return_niceness = thread_current ()->niceness;
+  intr_enable();
+  return return_niceness;
 }
 
 /* Returns 100 times the system load average. */
 int
 thread_get_load_avg (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+  /*********** Project 1-3 Advanced Scheduler *************/
+  intr_disable();
+  int return_load_avg = convert_x_to_int_round_off (mul_fp_int (load_avg, 100));
+  intr_enable();
+  return return_load_avg;
 }
 
 /* Returns 100 times the current thread's recent_cpu value. */
 int
 thread_get_recent_cpu (void) 
 {
-  /* Not yet implemented. */
-  return 0;
+  /*********** Project 1-3 Advanced Scheduler *************/
+  intr_disable();
+  int return_recent_cpu = convert_x_to_int_round_off (mul_fp_int (thread_current ()->recent_cpu, 100));
+  intr_enable();
+  return return_recent_cpu;
 }
 
 /* Idle thread.  Executes when no other thread is ready to run.
