@@ -208,18 +208,27 @@ lock_acquire (struct lock *lock)
   ASSERT (lock != NULL);
   ASSERT (!intr_context ());
   ASSERT (!lock_held_by_current_thread (lock));
-  if (lock->holder != NULL)
-  {
-    thread_current()->waiting_lock = lock;
-    if (thread_current()->priority > lock->holder->priority)
-    {
-      list_insert_ordered(&lock->holder->donators_list, &thread_current()->donators_elem, compare_priority_donators, NULL);
-      donate_priority();
-    }
+
+  /*********** Project 1-3 Advanced Scheduler *************/
+  if(thread_mlfqs) {
+    sema_down (&lock->semaphore);
+    lock->holder = thread_current ();
   }
-  sema_down (&lock->semaphore);
-  thread_current()->waiting_lock = NULL;
-  lock->holder = thread_current ();
+  /*********** Project 1-2 Priority Scheduling ************/
+  else {
+    if (lock->holder != NULL)
+    {
+      thread_current()->waiting_lock = lock;
+      if (thread_current()->priority > lock->holder->priority)
+      {
+        list_insert_ordered(&lock->holder->donators_list, &thread_current()->donators_elem, compare_priority_donators, NULL);
+        donate_priority();
+      }
+    }
+    sema_down (&lock->semaphore);
+    thread_current()->waiting_lock = NULL;
+    lock->holder = thread_current ();
+  }
 }
 
 /* Tries to acquires LOCK and returns true if successful or false
@@ -252,37 +261,44 @@ lock_release (struct lock *lock)
 {
   ASSERT (lock != NULL);
   ASSERT (lock_held_by_current_thread (lock));
-  
-  struct thread *cur_thread;
-  cur_thread = thread_current();
-  
-  if (!list_empty(&cur_thread->donators_list))
-  {
-    struct list_elem *e;
-    for (e = list_begin(&cur_thread->donators_list); e != list_end(&cur_thread->donators_list); e = list_next(e))
-    {
-      struct thread *d = list_entry(e, struct thread, donators_elem);
-      if (lock == d->waiting_lock)
-      {
-        list_remove(&d->donators_elem);
-      }
-    }
-  } // 더 이상 release한 락에 대한 priority donate를 필요로 하지 않으므로 제거
 
-  if (!list_empty(&cur_thread->donators_list)) // 해당 락에 대한 donate를 제거하고 남은 donate가 있으면 그걸로 설정
-  {
-    struct list_elem *max_e = list_max(&cur_thread->donators_list, compare_priority_donators, NULL);
-    struct thread *max_donator = list_entry(max_e, struct thread, donators_elem);
-    int max_donator_priority = max_donator->priority;
-    if (max_donator_priority > cur_thread->initial_priority)
+  /*********** Project 1-3 Advanced Scheduler *************/ 
+  if(!thread_mlfqs){
+    /*********** Project 1-2 Priority Scheduling ************/
+    struct thread *cur_thread;
+    cur_thread = thread_current();
+    
+    if (!list_empty(&cur_thread->donators_list))
     {
-      cur_thread->priority = max_donator_priority;
+      struct list_elem *e;
+      for (e = list_begin(&cur_thread->donators_list); e != list_end(&cur_thread->donators_list); e = list_next(e))
+      {
+        struct thread *d = list_entry(e, struct thread, donators_elem);
+        if (lock == d->waiting_lock)
+        {
+          list_remove(&d->donators_elem);
+        }
+      }
+      
+    } // 더 이상 release한 락에 대한 priority donate를 필요로 하지 않으므로 제거
+
+    if (!list_empty(&cur_thread->donators_list)) // 해당 락에 대한 donate를 제거하고 남은 donate가 있으면 그걸로 설정
+    {
+      struct list_elem *max_e = list_max(&cur_thread->donators_list, compare_priority_donators, NULL);
+      struct thread *max_donator = list_entry(max_e, struct thread, donators_elem);
+      int max_donator_priority = max_donator->priority;
+      if (max_donator_priority > cur_thread->initial_priority)
+      {
+        cur_thread->priority = max_donator_priority;
+      }
+      else cur_thread->priority = cur_thread->initial_priority;
     }
     else cur_thread->priority = cur_thread->initial_priority;
+    lock->holder = NULL;
   }
-  else cur_thread->priority = cur_thread->initial_priority;
-  lock->holder = NULL;
+  /********************************************************/
   sema_up (&lock->semaphore);
+  
 }
 
 /* Returns true if the current thread holds LOCK, false
@@ -416,7 +432,7 @@ donate_priority_recursive (struct thread *t, struct lock *lock)
 }
 
 bool
-compare_priority_semaphores (struct list_elem *e1, struct list_elem *e2, void *aux UNUSED)
+compare_priority_semaphores (const struct list_elem *e1, const struct list_elem *e2, void *aux UNUSED)
 {
   struct list *l1 = &list_entry(e1, struct semaphore_elem, elem)->semaphore.waiters;
   struct list *l2 = &list_entry(e2, struct semaphore_elem, elem)->semaphore.waiters;

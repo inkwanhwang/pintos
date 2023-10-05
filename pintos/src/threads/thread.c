@@ -11,6 +11,7 @@
 #include "threads/switch.h"
 #include "threads/synch.h"
 #include "threads/vaddr.h"
+#include "threads/fp.h"
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
@@ -61,6 +62,9 @@ static unsigned thread_ticks;   /* # of timer ticks since last yield. */
    If true, use multi-level feedback queue scheduler.
    Controlled by kernel command-line option "-o mlfqs". */
 bool thread_mlfqs;
+
+/*********** Project 1-3 Advanced Scheduler *************/
+int load_avg = 0;
 
 static void kernel_thread (thread_func *, void *aux);
 
@@ -354,6 +358,9 @@ thread_foreach (thread_action_func *func, void *aux)
 void
 thread_set_priority (int new_priority) 
 {
+  /*********** Project 1-3 Advanced Scheduler *************/
+  if(thread_mlfqs) return;
+  /********************************************************/
   struct thread *cur_thread = thread_current();
   cur_thread->initial_priority = new_priority;
   cur_thread->priority = new_priority;
@@ -495,11 +502,24 @@ init_thread (struct thread *t, const char *name, int priority)
   t->stack = (uint8_t *) t + PGSIZE;
   t->priority = priority;
   t->magic = THREAD_MAGIC;
-/************ Project 1-2 Priority Donation *************/
+  /************ Project 1-2 Priority Donation *************/
   t->initial_priority = priority;
   list_init(&t->donators_list);
   t->waiting_lock = NULL;
-/********************************************************/
+  /********************************************************/
+  /*********** Project 1-3 Advanced Scheduler *************/
+  if(thread_mlfqs){
+    if(t==initial_thread){
+      t->niceness = 0;
+      t->recent_cpu = 0;
+    }
+    else{
+      t->niceness = thread_current()->niceness;
+      t->recent_cpu = thread_current()->recent_cpu;
+    }
+    mlfqs_set_priority(t);
+  }
+  /********************************************************/
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
   intr_set_level (old_level);
@@ -664,9 +684,90 @@ void thread_preempt (){
 }
 
 bool
-compare_priority_donators (struct list_elem *e1, struct list_elem *e2, void *aux UNUSED)
+compare_priority_donators (const struct list_elem *e1, const struct list_elem *e2, void *aux UNUSED)
 {
   int donator1_priority = list_entry(e1, struct thread, donators_elem)->priority;
   int donator2_priority = list_entry(e2, struct thread, donators_elem)->priority;
   return donator1_priority > donator2_priority;
+}
+/*********** Project 1-3 Advanced Scheduler *************/
+int
+mlfqs_cal_priority(struct thread *t)
+{
+  int first_term = convert_n_to_fp(PRI_MAX);
+  int second_term = div_fp_by_int(t->recent_cpu, 4);
+  int third_term = div_fp_by_int(t->niceness, 2);
+  int mlfqs_priority = convert_x_to_int_round_down(sub_fp_fp(sub_fp_fp(first_term, second_term), third_term));
+  return mlfqs_priority;
+}
+void
+mlfqs_set_priority(struct thread *t)
+{
+  if(t==idle_thread) return;
+  int new_priority = mlfqs_cal_priority(t); // int
+  if(new_priority >= PRI_MAX) t->priority = 63;
+  else if(new_priority <= PRI_MIN) t->priority = 0;
+  else t->priority = new_priority;
+  t->initial_priority = t->priority;
+
+  thread_preempt();
+}
+int
+mlfqs_cal_recent_cpu(struct thread *t)
+{
+  int tiwce_load_avg = mul_fp_int(load_avg, 2);
+  int first_term = mul_fp_fp(div_fp_by_fp(tiwce_load_avg, add_fp_int(tiwce_load_avg, 1)), t->recent_cpu);
+  int second_term = t->niceness;
+  return add_fp_fp(first_term, second_term);
+}
+void
+mlfqs_set_recent_cpu(struct thread *t)
+{
+  if(t==idle_thread) return;
+  t->recent_cpu = mlfqs_cal_recent_cpu(t); // fp
+}
+int
+mlfqs_cal_load_avg(){
+  int ready_list_threads = list_size(&ready_list);
+  int ready_threads = ready_list_threads + is_not_idle();
+
+  int first_term = div_fp_by_int(mul_fp_int(load_avg, 59), 60);
+  int second_term = convert_n_to_fp(ready_threads/60);
+  return add_fp_fp(first_term, second_term);
+}
+void
+mlfqs_set_load_avg(){
+  load_avg = mlfqs_cal_load_avg(); // fp
+}
+bool
+is_not_idle()
+{
+  return thread_current()!=idle_thread;
+}
+
+void
+advanced_schedule(int ticks, int TIMER_FREQ)
+{
+  struct thread *cur = thread_current();
+  if(is_not_idle())
+  {
+    cur->recent_cpu += 1;
+
+    struct list_elem *e;
+    if(ticks%4 == 0)
+    {
+      for (e = list_begin(&all_list); e != list_end(&all_list); e = list_next(e)){
+        struct thread *t = list_entry(e, struct thread, allelem);
+        mlfqs_set_priority(t);
+      }
+    }
+    if(ticks%TIMER_FREQ == 0)
+    {
+      for (e = list_begin(&all_list); e != list_end(&all_list); e = list_next(e)){
+        struct thread *t = list_entry(e, struct thread, allelem);
+        mlfqs_set_recent_cpu(t);
+      }
+      mlfqs_set_load_avg();
+    }
+  }
 }

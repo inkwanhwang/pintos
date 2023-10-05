@@ -100,6 +100,9 @@ struct thread
    struct list donators_list;
    struct list_elem donators_elem;
    struct lock *waiting_lock;
+   /*********** Project 1-3 Advanced Scheduler *************/
+   int niceness;
+   int recent_cpu;
    /********************************************************/
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
@@ -154,6 +157,16 @@ int thread_get_load_avg (void);
 
 /*********** Project 1-2 Priority Scheduling ************/
 bool compare_priority (const struct list_elem *, const struct list_elem *, void *aux);
-bool compare_priority_donators (struct list_elem *, struct list_elem *, void *aux);
+bool compare_priority_donators (const struct list_elem *, const struct list_elem *, void *aux);
+/*********** Project 1-3 Advanced Scheduler *************/
+int mlfqs_cal_priority(struct thread *);
+void mlfqs_set_priority(struct thread *);
+int mlfqs_cal_recent_cpu(struct thread *);
+void mlfqs_set_recent_cpu(struct thread *);
+int mlfqs_cal_load_avg(void);
+void mlfqs_set_load_avg(void);
+bool is_not_idle(void);
+void advanced_schedule(int, int);
+
 
 #endif /* threads/thread.h */

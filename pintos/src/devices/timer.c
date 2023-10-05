@@ -177,7 +177,11 @@ timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
   thread_tick ();
+
   
+  /*********** Project 1-3 Advanced Scheduler *************/
+  if(thread_mlfqs) advanced_schedule(ticks, TIMER_FREQ);
+  /********************************************************/
   /**************** Project 1-1 Alarm clock ***************/
   struct list *sleep_list = get_sleep_list();
   struct list_elem *e = list_begin(sleep_list);

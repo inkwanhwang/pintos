@@ -44,7 +44,7 @@ void cond_broadcast (struct condition *, struct lock *);
 /************ Project 1-2 Priority Donation *************/
 void donate_priority (void);
 void donate_priority_recursive (struct thread *, struct lock *);
-bool compare_priority_semaphores (struct list_elem *, struct list_elem *, void *aux);
+bool compare_priority_semaphores (const struct list_elem *,const struct list_elem *, void *aux);
 
 /* Optimization barrier.
 
