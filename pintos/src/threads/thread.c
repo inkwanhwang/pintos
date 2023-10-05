@@ -254,7 +254,6 @@ thread_unblock (struct thread *t)
   /*********** Project 1-2 Priority Scheduling ************/
   //list_push_back (&ready_list, &t->elem);
   list_insert_ordered (&ready_list, &t->elem, compare_priority, NULL);
-
   t->status = THREAD_READY;
   intr_set_level (old_level);
 }

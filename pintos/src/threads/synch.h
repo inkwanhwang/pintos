@@ -42,7 +42,7 @@ void cond_signal (struct condition *, struct lock *);
 void cond_broadcast (struct condition *, struct lock *);
 
 /************ Project 1-2 Priority Donation *************/
-void donate_priority ();
+void donate_priority (void);
 void donate_priority_recursive (struct thread *, struct lock *);
 bool compare_priority_semaphores (struct list_elem *, struct list_elem *, void *aux);
 

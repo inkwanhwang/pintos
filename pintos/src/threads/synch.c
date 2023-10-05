@@ -121,7 +121,8 @@ sema_up (struct semaphore *sema)
     /*********** Project 1-2 Priority Scheduling ************/
     /*thread_unblock (list_entry (list_pop_front (&sema->waiters),
                                 struct thread, elem));*/
-    struct list_elem* e = list_max(&sema->waiters, compare_priority, NULL);
+    list_sort(&sema->waiters, compare_priority, NULL);
+    struct list_elem* e = list_front(&sema->waiters);
     struct thread* t = list_entry(e, struct thread, elem);
     list_remove(e);
     thread_unblock(t);
@@ -213,7 +214,7 @@ lock_acquire (struct lock *lock)
     if (thread_current()->priority > lock->holder->priority)
     {
       list_insert_ordered(&lock->holder->donators_list, &thread_current()->donators_elem, compare_priority_donators, NULL);
-      donate_priority(thread_current(), &lock->holder);
+      donate_priority();
     }
   }
   sema_down (&lock->semaphore);
@@ -261,13 +262,13 @@ lock_release (struct lock *lock)
     for (e = list_begin(&cur_thread->donators_list); e != list_end(&cur_thread->donators_list); e = list_next(e))
     {
       struct thread *d = list_entry(e, struct thread, donators_elem);
-      if (d->waiting_lock == lock)
+      if (lock == d->waiting_lock)
       {
         list_remove(&d->donators_elem);
       }
     }
   } // 더 이상 release한 락에 대한 priority donate를 필요로 하지 않으므로 제거
-  
+
   if (!list_empty(&cur_thread->donators_list)) // 해당 락에 대한 donate를 제거하고 남은 donate가 있으면 그걸로 설정
   {
     struct list_elem *max_e = list_max(&cur_thread->donators_list, compare_priority_donators, NULL);
@@ -420,6 +421,6 @@ compare_priority_semaphores (struct list_elem *e1, struct list_elem *e2, void *a
   struct list *l1 = &list_entry(e1, struct semaphore_elem, elem)->semaphore.waiters;
   struct list *l2 = &list_entry(e2, struct semaphore_elem, elem)->semaphore.waiters;
   int p1 = list_entry(list_max(l1, compare_priority, 0), struct thread, elem)->priority;
-  int p2 = list_entry(list_max(l1, compare_priority, 0), struct thread, elem)->priority;
+  int p2 = list_entry(list_max(l2, compare_priority, 0), struct thread, elem)->priority;
   return p1 > p2;
 }
