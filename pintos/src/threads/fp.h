@@ -59,7 +59,7 @@ int sub_fp_int (int x, int n)
 
 int mul_fp_fp (int x, int y)
 {
-    return ((int64_t)x)*y/f;
+    return ((int64_t)x *y)/f;
 }
 
 int mul_fp_int (int x, int n)
@@ -69,7 +69,7 @@ int mul_fp_int (int x, int n)
 
 int div_fp_by_fp (int x, int y)
 {
-    return ((int64_t)x)*f/y;
+    return ((int64_t)x*f)/y;
 }
 
 int div_fp_by_int (int x, int n)

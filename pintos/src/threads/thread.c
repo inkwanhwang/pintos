@@ -709,7 +709,7 @@ mlfqs_cal_priority(struct thread *t)
 {
   int first_term = convert_n_to_fp(PRI_MAX);
   int second_term = div_fp_by_int(t->recent_cpu, 4);
-  int third_term = div_fp_by_int(t->niceness, 2);
+  int third_term = mul_fp_int(convert_n_to_fp(t->niceness), 2);
   int mlfqs_priority = convert_x_to_int_round_down(sub_fp_fp(sub_fp_fp(first_term, second_term), third_term));
   return mlfqs_priority;
 }
@@ -727,7 +727,7 @@ mlfqs_cal_recent_cpu(struct thread *t)
 {
   int tiwce_load_avg = mul_fp_int(load_avg, 2);
   int first_term = mul_fp_fp(div_fp_by_fp(tiwce_load_avg, add_fp_int(tiwce_load_avg, 1)), t->recent_cpu);
-  int second_term = t->niceness;
+  int second_term = convert_n_to_fp(t->niceness);
   return add_fp_fp(first_term, second_term);
 }
 void
@@ -768,13 +768,14 @@ advanced_schedule(int ticks, int TIMER_FREQ)
       mlfqs_set_priority(t);
     }
   }
+  
   if(ticks%TIMER_FREQ == 0)
   {
+    mlfqs_set_load_avg();
     struct list_elem *e;
     for (e = list_begin(&all_list); e != list_end(&all_list); e = list_next(e)){
       struct thread *t = list_entry(e, struct thread, allelem);
       mlfqs_set_recent_cpu(t);
     }
-    mlfqs_set_load_avg();
   }
 }
