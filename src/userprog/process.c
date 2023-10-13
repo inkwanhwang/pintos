@@ -40,7 +40,7 @@ process_execute (const char *file_name)
 
   /************* Project 2-2 Argument Passing *************/
   char* save_ptr;
-  char* thread_name = strtok_r(fn_copy, " ", &save_ptr);
+  char* thread_name = strtok_r(file_name, " ", &save_ptr);
   /********************************************************/
   
   /* Create a new thread to execute FILE_NAME. */
@@ -67,7 +67,19 @@ start_process (void *file_name_)
   if_.gs = if_.fs = if_.es = if_.ds = if_.ss = SEL_UDSEG;
   if_.cs = SEL_UCSEG;
   if_.eflags = FLAG_IF | FLAG_MBS;
-  success = load (file_name, &if_.eip, &if_.esp);
+  //success = load (file_name, &if_.eip, &if_.esp);
+
+  /************* Project 2-2 Argument Passing *************/
+  int argc;
+  char** argv;
+
+  argc = parse_argument(argv, file_name);
+  
+  success = load (argv[0], &if_.eip, &if_.esp);
+
+  if(success)
+    set_stack(argc, argv, &if_.eip, &if_.esp);
+  /********************************************************/
 
   /* If load failed, quit. */
   palloc_free_page (file_name);
