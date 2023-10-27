@@ -499,3 +499,33 @@ parse_argument(char **argv, char *file_name)
 
   return argc;
 }
+
+static void
+set_stack(int argc, char **argv, void **esp)
+{
+  uintptr_t addr[32];
+  int size_ptr = sizeof(uintptr_t);
+  int i;
+
+  for (i = argc - 1; i >= 0; i--)
+  {
+    *esp -= strlen(argv[i]) + 1;
+    strlcpy(*esp, argv[i], strlen(argv[i]) + 1);
+    addr[i] = (uintptr_t)* esp;
+  }
+
+  *esp = (uintptr_t)*esp & ~0x3;
+  *esp -= size_ptr;
+
+  for (i = argc - 1; i >= 0; i--)
+  {
+    *esp -= size_ptr;
+    *(uintptr_t *)*esp = addr[i];
+  }
+
+  *esp -= size_ptr;
+  *(uintptr_t*)*esp = (uintptr_t)*esp + size_ptr;
+  *esp -= size_ptr;
+  *(int*)*esp = argc;
+  *esp -= size_ptr;
+}
