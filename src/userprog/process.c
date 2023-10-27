@@ -484,6 +484,21 @@ install_page (void *upage, void *kpage, bool writable)
           && pagedir_set_page (t->pagedir, upage, kpage, writable));
 }
 
+/************* Project 2-2 Argument Passing *************/
+static int
+parse_argument(char **argv, char *file_name)
+{
+  int argc = 0;
+  char *save_ptr = file_name;
+  char *arg_ptr;
+
+  do{
+    arg_ptr = strtok_r(NULL, " ", &save_ptr);
+    argv[argc++] = arg_ptr;
+  } while(arg_ptr != NULL);
+
+  return argc;
+}
 
 static void
 set_stack(int argc, char **argv, void **esp)
@@ -514,3 +529,4 @@ set_stack(int argc, char **argv, void **esp)
   *(int*)*esp = argc;
   *esp -= size_ptr;
 }
+/********************************************************/
