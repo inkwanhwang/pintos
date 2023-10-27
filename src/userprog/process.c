@@ -506,27 +506,30 @@ set_stack(int argc, char **argv, void **esp)
   uintptr_t addr[32];
   int size_ptr = sizeof(uintptr_t);
   int i;
-
+  // argv[i]
   for (i = argc - 1; i >= 0; i--)
   {
-    *esp -= strlen(argv[i]) + 1;
-    strlcpy(*esp, argv[i], strlen(argv[i]) + 1);
+    int n = strlen(argv[i]) + 1;
+    *esp -= n;
+    memcpy(*esp, argv[i], n);
     addr[i] = (uintptr_t)* esp;
   }
-
-  *esp = (uintptr_t)*esp & ~0x3;
+  // argv[argc]
+  *esp = (uintptr_t)*esp & ~0x3; // 4의 배수
   *esp -= size_ptr;
-
+  // argv[i]
   for (i = argc - 1; i >= 0; i--)
   {
     *esp -= size_ptr;
     *(uintptr_t *)*esp = addr[i];
   }
-
+  // argv
   *esp -= size_ptr;
   *(uintptr_t*)*esp = (uintptr_t)*esp + size_ptr;
+  // argc
   *esp -= size_ptr;
   *(int*)*esp = argc;
+  // return address
   *esp -= size_ptr;
 }
 /********************************************************/
