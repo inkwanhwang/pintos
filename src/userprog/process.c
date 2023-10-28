@@ -20,6 +20,10 @@
 
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
+/************* Project 2-2 Argument Passing *************/
+static int parse_argument(char **argv, char *file_name);
+static void set_stack(int argc, char **argv, void **esp);
+/********************************************************/
 
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
@@ -78,7 +82,7 @@ start_process (void *file_name_)
   success = load (argv[0], &if_.eip, &if_.esp);
 
   if(success)
-    set_stack(argc, argv, &if_.eip, &if_.esp);
+    set_stack(argc, argv, &if_.esp);
   /********************************************************/
 
   /* If load failed, quit. */
