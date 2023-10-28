@@ -21,6 +21,7 @@
 static thread_func start_process NO_RETURN;
 static bool load (const char *cmdline, void (**eip) (void), void **esp);
 /************* Project 2-2 Argument Passing *************/
+
 static int parse_argument(char **argv, char *file_name);
 static void set_stack(int argc, char **argv, void **esp);
 /********************************************************/
