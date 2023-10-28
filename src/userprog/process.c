@@ -85,6 +85,10 @@ start_process (void *file_name_)
     set_stack(argc, argv, &if_.esp);
   /********************************************************/
 
+  /************* Project 2-2 Argument Passing *************/
+  hex_dump(if_.esp, if_.esp, 0x20000 - (uint32_t)if_.esp, true);
+  /********************************************************/
+
   /* If load failed, quit. */
   palloc_free_page (file_name);
   if (!success) 
@@ -112,6 +116,10 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
+  /************* Project 2-2 Argument Passing *************/
+  // For argument passing test
+  while(1){}
+  /********************************************************/
   return -1;
 }
 
