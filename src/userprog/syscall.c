@@ -102,14 +102,14 @@ syscall_handler (struct intr_frame *f UNUSED)
 
 /************* Project 2-3 System Call *************/
 
-// void
-// is_accessing_user_memory (const void *addr)
-// {
-//   if (!is_user_vaddr(addr) || addr == NULL)
-//   {
-//     exit(-1);
-//   }
-// }
+void
+is_accessing_user_memory (const void *addr)
+{
+  if (!is_user_vaddr(addr) || addr == NULL)
+  {
+    exit(-1);
+  }
+}
 
 void
 halt (void)
