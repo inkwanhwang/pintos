@@ -19,22 +19,22 @@ static void
 syscall_handler (struct intr_frame *f UNUSED) 
 {
   /************* Project 2-3 System Call *************/
-  // is_accessing_user_memory(f->esp);
-  // uintptr_t *sysnum_addr = f->esp;
-  // int sysnum = *sysnum_addr;
-  // int size_arg = sizeof(uintptr_t);
-  // int check_end = sizeof(uintptr_t) - 1;
+  is_accessing_user_memory(f->esp);
+  uintptr_t *sysnum_addr = f->esp;
+  int sysnum = *sysnum_addr;
+  int size_arg = sizeof(uintptr_t);
+  int check_end = sizeof(uintptr_t) - 1;
   
-  // switch (sysnum)
-  // {
-  //   case SYS_HALT: // 0 args
-  //     halt();
-  //     break;
+  switch (sysnum)
+  {
+    case SYS_HALT: // 0 args
+      halt();
+      break;
 
-  //   case SYS_EXIT: // 1 args
-  //     is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
-  //     exit(*(sysnum_addr + 1 * size_arg));
-  //     break;
+    case SYS_EXIT: // 1 args
+      is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
+      exit(*(sysnum_addr + 1 * size_arg));
+      break;
 
   //   case SYS_EXEC: // 1 args
   //     is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
@@ -91,9 +91,9 @@ syscall_handler (struct intr_frame *f UNUSED)
   //     close(*(sysnum_addr + 1 * size_arg));
   //     break;
 
-  //   default:
-  //     exit(-1);
-  // }
+    default:
+      exit(-1);
+  }
   /***************************************************/
   
   printf("system call!\n");
@@ -111,20 +111,20 @@ syscall_handler (struct intr_frame *f UNUSED)
 //   }
 // }
 
-// void
-// halt (void)
-// {
-// 	shutdown_power_off();
-// }
+void
+halt (void)
+{
+	shutdown_power_off();
+}
 
-// void
-// exit (int status)
-// {
-//   /************* Project 2-1 Process Termination Messages *************/
-// 	printf("%s: exit(%d)\n", thread_name(), status);
-//   /********************************************************************/
-// 	thread_exit();
-// }
+void
+exit (int status)
+{
+  /************* Project 2-1 Process Termination Messages *************/
+	printf("%s: exit(%d)\n", thread_name(), status);
+  /********************************************************************/
+	thread_exit();
+}
 
 // pid_t
 // exec (const char *cmd_line)
