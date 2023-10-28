@@ -1,6 +1,7 @@
 #ifndef USERPROG_SYSCALL_H
 #define USERPROG_SYSCALL_H
 /************* Project 2-3 System Call *************/
+#define MAX_ARGS 128
 typedef int pid_t;
 /***************************************************/
 

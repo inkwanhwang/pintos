@@ -1,5 +1,8 @@
 #ifndef USERPROG_PROCESS_H
 #define USERPROG_PROCESS_H
+/************* Project 2-2 Argument Passing *************/
+#define MAX_ARGS 128
+/********************************************************/
 
 #include "threads/thread.h"
 

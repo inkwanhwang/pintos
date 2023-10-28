@@ -75,7 +75,7 @@ start_process (void *file_name_)
 
   /************* Project 2-2 Argument Passing *************/
   int argc;
-  char* argv[128];
+  char* argv[MAX_ARGS];
 
   argc = parse_argument(argv, file_name);
   
