@@ -75,7 +75,7 @@ start_process (void *file_name_)
 
   /************* Project 2-2 Argument Passing *************/
   int argc;
-  char** argv;
+  char* argv[128];
 
   argc = parse_argument(argv, file_name);
   
@@ -86,7 +86,7 @@ start_process (void *file_name_)
   /********************************************************/
 
   /************* Project 2-2 Argument Passing *************/
-  hex_dump(if_.esp, if_.esp, 0x20000 - (uint32_t)if_.esp, true);
+  //hex_dump(if_.esp, if_.esp, 0x20000 - (uint32_t)if_.esp, true);
   /********************************************************/
 
   /* If load failed, quit. */
@@ -501,13 +501,11 @@ static int
 parse_argument(char **argv, char *file_name)
 {
   int argc = 0;
-  char *save_ptr = file_name;
+  char *save_ptr;
   char *arg_ptr;
-
-  do{
-    arg_ptr = strtok_r(NULL, " ", &save_ptr);
-    argv[argc++] = arg_ptr;
-  } while(arg_ptr != NULL);
+  char *argv_0 = strtok_r(file_name, " ", &save_ptr);
+  for (arg_ptr = argv_0; arg_ptr != NULL; arg_ptr = strtok_r(NULL, " ", &save_ptr))
+    argv[argc ++] = arg_ptr;
 
   return argc;
 }
@@ -515,7 +513,7 @@ parse_argument(char **argv, char *file_name)
 static void
 set_stack(int argc, char **argv, void **esp)
 {
-  uintptr_t addr[32];
+  uintptr_t addr[128];
   int size_ptr = sizeof(uintptr_t);
   int i;
   // argv[i]
@@ -539,7 +537,7 @@ set_stack(int argc, char **argv, void **esp)
   *esp -= size_ptr;
   *(uintptr_t*)*esp = (uintptr_t)*esp + size_ptr;
   // argc
-  *esp -= size_ptr;
+  *esp -= sizeof(int);
   *(int*)*esp = argc;
   // return address
   *esp -= size_ptr;
