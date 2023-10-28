@@ -75,7 +75,7 @@ start_process (void *file_name_)
 
   /************* Project 2-2 Argument Passing *************/
   int argc;
-  char* argv[MAX_ARGS];
+  char* argv[128];
 
   argc = parse_argument(argv, file_name);
   
@@ -86,7 +86,7 @@ start_process (void *file_name_)
   /********************************************************/
 
   /************* Project 2-2 Argument Passing *************/
-  //hex_dump(if_.esp, if_.esp, 0x20000 - (uint32_t)if_.esp, true);
+  hex_dump(if_.esp, if_.esp, 200, true);
   /********************************************************/
 
   /* If load failed, quit. */

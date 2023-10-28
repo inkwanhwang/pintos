@@ -97,7 +97,7 @@ syscall_handler (struct intr_frame *f UNUSED)
   /***************************************************/
   
   printf("system call!\n");
-  // thread_exit();
+  thread_exit();
 }
 
 /************* Project 2-3 System Call *************/
