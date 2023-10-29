@@ -46,7 +46,7 @@ syscall_handler (struct intr_frame *f UNUSED)
       f->eax = wait((pid_t)*(sysnum_addr + 1 * size_arg));
       break;
 
-    case SYS_CREATE: // 2 args // 이상함
+    case SYS_CREATE: // 2 args
       is_accessing_user_memory(sysnum_addr + 2 * size_arg + check_end);
       f->eax = create((const char *)*(sysnum_addr + 1 * size_arg), (unsigned)*(sysnum_addr + 2 * size_arg));
       break;
@@ -56,12 +56,12 @@ syscall_handler (struct intr_frame *f UNUSED)
       f->eax = remove((const char *)*(sysnum_addr + 1 * size_arg));
       break;
 
-    case SYS_OPEN: // 1 args // 이상함
+    case SYS_OPEN: // 1 args
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
       f->eax = open((const char *)*(sysnum_addr + 1 * size_arg));
       break;
 
-    case SYS_FILESIZE: // 1 args // 이상함
+    case SYS_FILESIZE: // 1 args
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
       f->eax = filesize((int)*(sysnum_addr + 1 * size_arg));
       break;
