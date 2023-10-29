@@ -33,15 +33,23 @@ tid_t
 process_execute (const char *file_name) 
 {
   char *fn_copy;
+  char *fn_pcb;
   tid_t tid;
 
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
   fn_copy = palloc_get_page (0);
-  if (fn_copy == NULL)
+  fn_pcb = palloc_get_page(0);
+  if (fn_copy == NULL || fn_pcb == NULL)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
+  strlcpy (fn_pcb, file_name, PGSIZE);
 
+  /************** Project 2-3 System Call *****************/
+  struct pcb *pcb = palloc_get_page(0);
+  init_pcb(pcb, fn_pcb);
+  /********************************************************/
+  
   /************* Project 2-2 Argument Passing *************/
   char* save_ptr;
   char* thread_name = strtok_r(file_name, " ", &save_ptr);
@@ -51,9 +59,23 @@ process_execute (const char *file_name)
   /************* Project 2-2 Argument Passing *************/
   //tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
   tid = thread_create (thread_name, PRI_DEFAULT, start_process, fn_copy);
-  /********************************************************/
+  /************** Project 2-3 System Call *****************/
   if (tid == TID_ERROR)
-    palloc_free_page (fn_copy); 
+  {
+    palloc_free_page (fn_copy);
+    palloc_free_page (pcb); 
+    palloc_free_page (fn_pcb);
+  }
+  else
+  {
+    sema_down(&pcb->load_sema);
+    if (pcb->pid != -1)
+    {
+      list_push_back(&thread_current()->children_list, &pcb->children_elem);
+    }
+    palloc_free_page (fn_pcb);
+  }
+  /********************************************************/
   return tid;
 }
 
@@ -584,5 +606,22 @@ set_stack(int argc, char **argv, void **esp)
   *(int*)*esp = argc;
   // return address
   *esp -= size_ptr;
+}
+
+/*************** Project 2-3 System Call ****************/
+void
+init_pcb (struct pcb *pcb, char *filename)
+{
+  pcb->filename = filename;
+  // pcb->pid
+  pcb->exit_code = -1;
+
+  // pcb->children_elem
+  pcb->parent = thread_current();
+  
+  sema_init(&pcb->exit_sema, 0);
+  pcb->exit_done = false;
+  sema_init(&pcb->load_sema, 0);
+  pcb->load_done = false;
 }
 /********************************************************/

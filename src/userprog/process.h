@@ -4,6 +4,7 @@
 #define MAX_ARGS 128
 /************** Project 2-3 System Call *****************/
 typedef int pid_t;
+
 #include "threads/synch.h"
 /********************************************************/
 
