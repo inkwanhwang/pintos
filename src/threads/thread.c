@@ -468,10 +468,12 @@ init_thread (struct thread *t, const char *name, int priority)
   list_push_back (&all_list, &t->allelem);
   intr_set_level (old_level);
 
+/*************** Project 2-3 System call ****************/
 #ifdef USERPROG
   t->pcb = NULL;
   list_init(&t->children_list);
 #endif
+/********************************************************/
 }
 
 /* Allocates a SIZE-byte frame at the top of thread T's stack and

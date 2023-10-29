@@ -4,9 +4,7 @@
 #include <debug.h>
 #include <list.h>
 #include <stdint.h>
-/************** Project 2-3 System Call *****************/
-#include <userprog/process.h>
-/********************************************************/
+struct pcb;
 
 /* States in a thread's life cycle. */
 enum thread_status
@@ -96,12 +94,14 @@ struct thread
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
+   /*************** Project 2-3 System call ****************/
 //#ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
     struct pcb *pcb;
     struct list children_list;
 //#endif
+   /********************************************************/
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */

@@ -37,60 +37,60 @@ syscall_handler (struct intr_frame *f UNUSED)
       exit((int)*(sysnum_addr + 1 * size_arg));
       break;
 
-    case SYS_EXEC: // 1 args
-      is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
-      f->eax = exec((const char *)*(sysnum_addr + 1 * size_arg));
-      break;
+    // case SYS_EXEC: // 1 args
+    //   is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
+    //   f->eax = exec((const char *)*(sysnum_addr + 1 * size_arg));
+    //   break;
 
     case SYS_WAIT: // 1 args
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
       f->eax = wait((pid_t)*(sysnum_addr + 1 * size_arg));
       break;
 
-    case SYS_CREATE: // 2 args
-      is_accessing_user_memory(sysnum_addr + 2 * size_arg + check_end);
-      f->eax = create((const char *)*(sysnum_addr + 1 * size_arg), (unsigned)*(sysnum_addr + 2 * size_arg));
-      break;
+    // case SYS_CREATE: // 2 args
+    //   is_accessing_user_memory(sysnum_addr + 2 * size_arg + check_end);
+    //   f->eax = create((const char *)*(sysnum_addr + 1 * size_arg), (unsigned)*(sysnum_addr + 2 * size_arg));
+    //   break;
 
-    case SYS_REMOVE: // 1 args
-      is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
-      f->eax = remove((const char *)*(sysnum_addr + 1 * size_arg));
-      break;
+    // case SYS_REMOVE: // 1 args
+    //   is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
+    //   f->eax = remove((const char *)*(sysnum_addr + 1 * size_arg));
+    //   break;
 
-    case SYS_OPEN: // 1 args
-      is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
-      f->eax = open((const char *)*(sysnum_addr + 1 * size_arg));
-      break;
+    // case SYS_OPEN: // 1 args
+    //   is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
+    //   f->eax = open((const char *)*(sysnum_addr + 1 * size_arg));
+    //   break;
 
-    case SYS_FILESIZE: // 1 args
-      is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
-      f->eax = filesize((int)*(sysnum_addr + 1 * size_arg));
-      break;
+    // case SYS_FILESIZE: // 1 args
+    //   is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
+    //   f->eax = filesize((int)*(sysnum_addr + 1 * size_arg));
+    //   break;
     
-    case SYS_READ: // 3 args
-      is_accessing_user_memory(sysnum_addr + 3 * size_arg + check_end);
-      f->eax = read((int)*(sysnum_addr + 1 * size_arg), (void *)*(sysnum_addr + 2 * size_arg), (unsigned)*(sysnum_addr + 3 * size_arg));
-      break;
+    // case SYS_READ: // 3 args
+    //   is_accessing_user_memory(sysnum_addr + 3 * size_arg + check_end);
+    //   f->eax = read((int)*(sysnum_addr + 1 * size_arg), (void *)*(sysnum_addr + 2 * size_arg), (unsigned)*(sysnum_addr + 3 * size_arg));
+    //   break;
 
-    case SYS_WRITE: // 3 args
-      is_accessing_user_memory(sysnum_addr + 3 * size_arg + check_end);
-      f->eax = write((int)*(sysnum_addr + 1 * size_arg), (const void *)*(sysnum_addr + 2 * size_arg), (unsigned)*(sysnum_addr + 3 * size_arg));
-      break;
+    // case SYS_WRITE: // 3 args
+    //   is_accessing_user_memory(sysnum_addr + 3 * size_arg + check_end);
+    //   f->eax = write((int)*(sysnum_addr + 1 * size_arg), (const void *)*(sysnum_addr + 2 * size_arg), (unsigned)*(sysnum_addr + 3 * size_arg));
+    //   break;
 
-    case SYS_SEEK: // 2 args
-      is_accessing_user_memory(sysnum_addr + 2 * size_arg + check_end);
-      seek((int)*(sysnum_addr + 1 * size_arg), (unsigned)*(sysnum_addr + 2 * size_arg));
-      break;
+    // case SYS_SEEK: // 2 args
+    //   is_accessing_user_memory(sysnum_addr + 2 * size_arg + check_end);
+    //   seek((int)*(sysnum_addr + 1 * size_arg), (unsigned)*(sysnum_addr + 2 * size_arg));
+    //   break;
 
-    case SYS_TELL: // 1 args
-      is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
-      f->eax = tell((int)*(sysnum_addr + 1 * size_arg));
-      break;
+    // case SYS_TELL: // 1 args
+    //   is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
+    //   f->eax = tell((int)*(sysnum_addr + 1 * size_arg));
+    //   break;
 
-    case SYS_CLOSE: // 1 args
-      is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
-      close((int)*(sysnum_addr + 1 * size_arg));
-      break;
+    // case SYS_CLOSE: // 1 args
+    //   is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
+    //   close((int)*(sysnum_addr + 1 * size_arg));
+    //   break;
 
     default:
       exit(-1);
@@ -141,9 +141,9 @@ exit (int status)
 // 	return pid;
 // }
 
-// int
-// wait (pid_t pid)
-// {
-// 	return process_wait((tid_t) pid);
-// }
+int
+wait (pid_t pid)
+{
+	return process_wait((tid_t) pid);
+}
 /***************************************************/

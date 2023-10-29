@@ -58,7 +58,7 @@ process_execute (const char *file_name)
   /* Create a new thread to execute FILE_NAME. */
   /************* Project 2-2 Argument Passing *************/
   //tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
-  tid = thread_create (thread_name, PRI_DEFAULT, start_process, fn_copy);
+  tid = thread_create (thread_name, PRI_DEFAULT, start_process, pcb);
   /************** Project 2-3 System Call *****************/
   if (tid == TID_ERROR)
   {
@@ -82,9 +82,14 @@ process_execute (const char *file_name)
 /* A thread function that loads a user process and starts it
    running. */
 static void
-start_process (void *file_name_)
+start_process (void *pcb_)
 {
-  char *file_name = file_name_;
+  /*************** Project 2-3 System call ****************/
+  struct pcb *pcb = pcb_;
+  char *file_name = pcb->filename;
+  thread_current()->pcb = pcb;
+  /********************************************************/
+
   struct intr_frame if_;
   bool success;
 
@@ -100,11 +105,12 @@ start_process (void *file_name_)
   char* argv[128];
 
   argc = parse_argument(argv, file_name);
-  
+
   success = load (argv[0], &if_.eip, &if_.esp);
 
   if(success)
     set_stack(argc, argv, &if_.esp);
+  sema_up(&pcb->load_sema);
   /********************************************************/
 
   /************* Project 2-2 Argument Passing *************/

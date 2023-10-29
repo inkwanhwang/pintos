@@ -2,13 +2,12 @@
 #define USERPROG_PROCESS_H
 /************* Project 2-2 Argument Passing *************/
 #define MAX_ARGS 128
-/************** Project 2-3 System Call *****************/
-typedef int pid_t;
-
-#include "threads/synch.h"
 /********************************************************/
-
 #include "threads/thread.h"
+/************** Project 2-3 System Call *****************/
+#include "threads/synch.h"
+typedef int pid_t;
+/********************************************************/
 
 /************** Project 2-3 System Call *****************/
 struct pcb
