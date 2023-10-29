@@ -162,7 +162,7 @@ process_exit (void)
       struct list_elem *e;
       struct pcb *child;
       
-      cur->pcb->is_exited = true;
+      cur->pcb->exit_done = true;
       
       for (e = list_begin(cur->children_list); e != list_end(cur->children_list); e = list_next(e))
       {
@@ -171,7 +171,7 @@ process_exit (void)
         {
           list_remove(&child->children_elem);
           child->parent = NULL;
-          if (child->exit_done)
+          if (child->exit_done == true)
           {
             palloc_free_page(child);
           }
