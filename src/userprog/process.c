@@ -144,9 +144,35 @@ process_exit (void)
          directory before destroying the process's page
          directory, or our active page directory will be one
          that's been freed (and cleared). */
-      cur->pagedir = NULL;
-      pagedir_activate (NULL);
-      pagedir_destroy (pd);
+      struct list_elem *e;
+      struct pcb *child;
+      
+      cur->pcb->is_exited = true;
+      
+      for (e = list_begin(cur->children_list); e != list_end(cur->children_list); e = list_next(e))
+      {
+        child = list_entry(e, struct pcb, children_elem);
+        if (child != NULL)
+        {
+          list_remove(&child->children_elem);
+          child->parent = NULL;
+          if (child->exit_done)
+          {
+            palloc_free_page(child);
+          }
+        }
+      }
+      sema_up(&cur->pcb->exit_sema);
+      if (cur->pcb != NULL && cur->pcb->parent == NULL)
+      {
+        palloc_free_page(cur->pcb);
+      }
+      if (cur->pagedir != NULL)
+      {
+        cur->pagedir = NULL;
+        pagedir_activate (NULL);
+        pagedir_destroy (pd);
+      }
     }
 }
 
