@@ -181,6 +181,7 @@ process_exit (void)
          directory before destroying the process's page
          directory, or our active page directory will be one
          that's been freed (and cleared). */
+      /*************** Project 2-3 System call ****************/
       struct list_elem *e;
       struct pcb *child;
       
@@ -210,6 +211,7 @@ process_exit (void)
         pagedir_activate (NULL);
         pagedir_destroy (pd);
       }
+      /********************************************************/
     }
 }
 
