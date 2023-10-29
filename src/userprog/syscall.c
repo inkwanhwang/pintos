@@ -5,6 +5,7 @@
 #include "threads/thread.h"
 /************* Project 2-3 System Call *************/
 #include "threads/vaddr.h"
+#include "userprog/pagedir.h"
 /***************************************************/
 
 static void syscall_handler (struct intr_frame *);
@@ -105,7 +106,7 @@ syscall_handler (struct intr_frame *f UNUSED)
 void
 is_accessing_user_memory (const void *addr)
 {
-  if (!is_user_vaddr(addr) || addr == NULL)
+  if (!is_user_vaddr(addr) || addr == NULL || !pagedir_get_page(thread_current()->pagedir, addr))
   {
     exit(-1);
   }
