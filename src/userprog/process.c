@@ -121,8 +121,23 @@ process_wait (tid_t child_tid UNUSED)
   // Parent is blocking until child is terminated with exit.
   // If child is terminated, return exit code.
   struct thread *cur = thread_current();
-  
+  struct list_elem *e;
+  int status;
+
+  for(e = list_begin(&cur->children_list); e != list_end(&cur->children_list); e = list_next(e))
+  {
+    struct pcb *p = list_entry(e, struct pcb, children_elem);
+    if(child_tid == p->pid){
+      if(!p)
+        return -1;
+      sema_down(&p->exit_sema);
+      status = p->exit_code;
+      list_remove(&p->children_elem);
+      return status;
+    }
+  }
   /********************************************************/
+  return -1;
 }
 
 /* Free the current process's resources. */
