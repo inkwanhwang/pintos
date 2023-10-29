@@ -164,7 +164,7 @@ process_exit (void)
       
       cur->pcb->exit_done = true;
       
-      for (e = list_begin(cur->children_list); e != list_end(cur->children_list); e = list_next(e))
+      for (e = list_begin(&cur->children_list); e != list_end(&cur->children_list); e = list_next(e))
       {
         child = list_entry(e, struct pcb, children_elem);
         if (child != NULL)
