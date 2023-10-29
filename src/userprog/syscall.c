@@ -6,6 +6,7 @@
 /************* Project 2-3 System Call *************/
 #include "threads/vaddr.h"
 #include "userprog/pagedir.h"
+#include "userprog/process.h"
 /***************************************************/
 
 static void syscall_handler (struct intr_frame *);
@@ -127,19 +128,26 @@ exit (int status)
 	thread_exit();
 }
 
-// pid_t
-// exec (const char *cmd_line)
-// {
-// 	is_accessing_user_memory(cmd_line);
+pid_t
+exec (const char *cmd_line)
+{
+  struct list_elem *e;
+  struct pcb *child = NULL;
+	is_accessing_user_memory(cmd_line);
 
-// 	pid_t pid; // pid_t have to be implemented
-// 	pid = process_execute(cmd_line);
+	pid_t pid = process_execute(cmd_line);
 
-// 	if(can_load_pid(pid) || can_run_pid(pid)){
-// 		return -1;
-// 	}
-// 	return pid;
-// }
+
+  for(e = list_begin(&thread_current()->children_list); e != list_end(&thread_current()->children_list); e = list_next(e))
+  {
+    child = list_entry(e, struct pcb, children_elem);
+  }
+  // pid가 잘못되거나, child pocess가 load 되지 않으면 -1 리턴
+	if(child == NULL || child->load_done == false){
+		return -1;
+	}
+	return pid;
+}
 
 int
 wait (pid_t pid)

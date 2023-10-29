@@ -107,7 +107,7 @@ start_process (void *pcb_)
   argc = parse_argument(argv, file_name);
 
   success = load (argv[0], &if_.eip, &if_.esp);
-
+  pcb->load_done = success;
   if(success)
     set_stack(argc, argv, &if_.esp);
   sema_up(&pcb->load_sema);
