@@ -116,11 +116,13 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED) 
 {
-  /************* Project 2-2 Argument Passing *************/
-  // For argument passing test
-  while(1){}
+  /*************** Project 2-3 System call ****************/
+  // If child_tid is invalid or terminated, return -1.
+  // Parent is blocking until child is terminated with exit.
+  // If child is terminated, return exit code.
+  struct thread *cur = thread_current();
+  
   /********************************************************/
-  return -1;
 }
 
 /* Free the current process's resources. */

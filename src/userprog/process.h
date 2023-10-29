@@ -9,6 +9,7 @@ typedef int pid_t;
 
 #include "threads/thread.h"
 
+/************** Project 2-3 System Call *****************/
 struct pcb
 {
     const char *filename;
@@ -23,6 +24,7 @@ struct pcb
     struct semaphore load_sema;
     bool load_done;
 };
+/********************************************************/
 
 tid_t process_execute (const char *file_name);
 int process_wait (tid_t);
