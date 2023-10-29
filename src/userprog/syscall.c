@@ -38,10 +38,10 @@ syscall_handler (struct intr_frame *f UNUSED)
       exit((int)*(sysnum_addr + 1 * size_arg));
       break;
 
-    // case SYS_EXEC: // 1 args
-    //   is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
-    //   f->eax = exec((const char *)*(sysnum_addr + 1 * size_arg));
-    //   break;
+    case SYS_EXEC: // 1 args
+      is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
+      f->eax = exec((const char *)*(sysnum_addr + 1 * size_arg));
+      break;
 
     case SYS_WAIT: // 1 args
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
@@ -154,5 +154,42 @@ int
 wait (pid_t pid)
 {
 	return process_wait((tid_t) pid);
+}
+
+bool create(const char *file, unsigned initial_size)
+{
+  return 0;
+}
+bool remove (const char *file)
+{
+  return 0;
+}
+int open (const char *file)
+{
+  return 0;
+}
+int filesize (int fd)
+{
+  return 0;
+}
+int read (int fd, void *buffer, unsigned size)
+{
+  return 0;
+}
+int write (int fd, const void *buffer, unsigned size)
+{
+  return 0;
+}
+void seek (int fd, unsigned position)
+{
+  return;
+}
+unsigned tell (int fd)
+{
+  return 0;
+}
+void close (int fd)
+{
+  return;
 }
 /***************************************************/
