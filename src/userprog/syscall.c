@@ -124,6 +124,7 @@ exit (int status)
 {
   /************* Project 2-1 Process Termination Messages *************/
 	printf("%s: exit(%d)\n", thread_name(), status);
+  thread_current()->pcb->exit_code = status;
   /********************************************************************/
 	thread_exit();
 }
