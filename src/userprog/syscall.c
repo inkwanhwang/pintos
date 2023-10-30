@@ -6,7 +6,7 @@
 
 /************* Project 2-3 System Call *************/
 struct lock filesys_lock;
-void fd_entry_init (struct fd_entry *fd_entry, struct file *file, struct list *fd_table_list);
+static void fd_entry_init (struct fd_entry *fd_entry, struct file *file, struct list *fd_table_list);
 /***************************************************/
 static void syscall_handler (struct intr_frame *);
 
