@@ -156,39 +156,56 @@ wait (pid_t pid)
 	return process_wait((tid_t) pid);
 }
 
-bool create(const char *file, unsigned initial_size)
+bool
+create (const char *file, unsigned initial_size)
 {
   return 0;
 }
-bool remove (const char *file)
+
+bool
+remove (const char *file)
 {
   return 0;
 }
-int open (const char *file)
+
+int
+open (const char *file)
 {
   return 0;
 }
-int filesize (int fd)
+
+int
+filesize (int fd)
 {
   return 0;
 }
-int read (int fd, void *buffer, unsigned size)
+
+int
+read (int fd, void *buffer, unsigned size)
 {
   return 0;
 }
-int write (int fd, const void *buffer, unsigned size)
+
+int
+write (int fd, const void *buffer, unsigned size)
 {
   return 0;
 }
-void seek (int fd, unsigned position)
+
+void
+seek (int fd, unsigned position)
 {
   return;
 }
-unsigned tell (int fd)
+
+unsigned
+tell (int fd)
 {
   return 0;
 }
-void close (int fd)
+
+void
+close (int fd)
 {
   return;
 }
