@@ -4,6 +4,12 @@
 #define MAX_ARGS 128
 typedef int pid_t;
 #include <stdbool.h>
+
+#include "threads/vaddr.h"
+#include "userprog/pagedir.h"
+#include "userprog/process.h"
+#include "filesys/filesys.h"
+#include "filesys/file.h"
 /***************************************************/
 
 void syscall_init (void);

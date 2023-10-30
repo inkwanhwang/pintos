@@ -3,12 +3,6 @@
 #include <syscall-nr.h>
 #include "threads/interrupt.h"
 #include "threads/thread.h"
-/************* Project 2-3 System Call *************/
-#include "threads/vaddr.h"
-#include "userprog/pagedir.h"
-#include "userprog/process.h"
-#include "filesys/filesys.h"
-/***************************************************/
 
 /************* Project 2-3 System Call *************/
 struct lock filesys_lock;
@@ -199,7 +193,27 @@ open (const char *file)
 int
 filesize (int fd)
 {
-  return 0;
+  struct fd_entry *fd_entry;
+  struct list *fd_table;
+  int filesize;
+
+  struct list_elem *e;
+
+  fd_table = &thread_current()->fd_table_list;
+  for (e = list_begin(fd_table); e != list_end(fd_table); e = list_next(e))
+  {
+    fd_entry = list_entry(e, struct fd_entry, fd_table_elem);
+    if (fd_entry->fd == fd) break;
+  }
+
+  if (fd_entry != NULL)
+  {
+    lock_acquire(&filesys_lock);
+    filesize = file_length(fd_entry->file);
+    lock_release(&filesys_lock);
+  }
+  else filesize = -1;
+  return filesize;
 }
 
 int
