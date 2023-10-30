@@ -3,9 +3,7 @@
 /************* Project 2-3 System Call *************/
 #define MAX_ARGS 128
 typedef int pid_t;
-typedef int bool;
-#define true 1
-#define false 0
+#include <stdbool.h>
 /***************************************************/
 
 void syscall_init (void);

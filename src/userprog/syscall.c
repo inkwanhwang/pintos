@@ -159,13 +159,13 @@ wait (pid_t pid)
 bool
 create (const char *file, unsigned initial_size)
 {
-  return 0;
+  return false;
 }
 
 bool
 remove (const char *file)
 {
-  return 0;
+  return false;
 }
 
 int
