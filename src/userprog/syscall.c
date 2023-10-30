@@ -262,7 +262,7 @@ read (int fd, void *buffer, unsigned size)
     return -1;
   lock_acquire(&filesys_lock);
   bytes_read = file_read(fd_entry->file, buffer, (off_t)size);
-  lock_release(&filesys_lock)
+  lock_release(&filesys_lock);
   return bytes_read;
 }
 
