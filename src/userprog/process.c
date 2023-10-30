@@ -33,21 +33,18 @@ tid_t
 process_execute (const char *file_name) 
 {
   char *fn_copy;
-  char *fn_pcb;
   tid_t tid;
 
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
   fn_copy = palloc_get_page (0);
-  fn_pcb = palloc_get_page(0);
-  if (fn_copy == NULL || fn_pcb == NULL)
+  if (fn_copy == NULL)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
-  strlcpy (fn_pcb, file_name, PGSIZE);
 
   /************** Project 2-3 System Call *****************/
   struct pcb *pcb = palloc_get_page(0);
-  init_pcb(pcb, fn_pcb);
+  init_pcb(pcb, fn_copy);
   /********************************************************/
   
   /************* Project 2-2 Argument Passing *************/
@@ -64,7 +61,6 @@ process_execute (const char *file_name)
   {
     palloc_free_page (fn_copy);
     palloc_free_page (pcb); 
-    palloc_free_page (fn_pcb);
   }
   else
   {
@@ -73,7 +69,6 @@ process_execute (const char *file_name)
     {
       list_push_back(&thread_current()->children_list, &pcb->children_elem);
     }
-    palloc_free_page (fn_pcb);
   }
   /********************************************************/
   return tid;
