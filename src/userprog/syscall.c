@@ -232,7 +232,38 @@ filesize (int fd)
 int
 read (int fd, void *buffer, unsigned size)
 {
-  return 0;
+  int i;
+  struct fd_entry *fd_entry;
+  struct list *fd_table;
+
+  struct list_elem *e;
+  bool found = false;
+  off_t bytes_read;
+
+  if(fd == 0)
+  {
+    uint8_t *buf = (uint8_t *)buffer;
+    for(i=0; i<size; i++)
+      buf[i] = input_getc();
+    return size;
+  }
+
+  fd_table = &thread_current()->fd_table_list;
+  for (e = list_begin(fd_table); e != list_end(fd_table); e = list_next(e))
+  {
+    fd_entry = list_entry(e, struct fd_entry, fd_table_elem);
+    if (fd_entry->fd == fd)
+    {
+      found = true;
+      break;
+    }
+  }
+  if(!found || !fd_entry)
+    return -1;
+  lock_acquire(&filesys_lock);
+  bytes_read = file_read(fd_entry->file, buffer, (off_t)size);
+  lock_release(&filesys_lock)
+  return bytes_read;
 }
 
 int
