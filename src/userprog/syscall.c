@@ -198,15 +198,20 @@ filesize (int fd)
   int filesize;
 
   struct list_elem *e;
+  bool found = false;
 
   fd_table = &thread_current()->fd_table_list;
   for (e = list_begin(fd_table); e != list_end(fd_table); e = list_next(e))
   {
     fd_entry = list_entry(e, struct fd_entry, fd_table_elem);
-    if (fd_entry->fd == fd) break;
+    if (fd_entry->fd == fd)
+    {
+      found = true;
+      break;
+    }
   }
 
-  if (fd_entry != NULL)
+  if (found == true && fd_entry != NULL)
   {
     lock_acquire(&filesys_lock);
     filesize = file_length(fd_entry->file);
