@@ -256,7 +256,30 @@ tell (int fd)
 void
 close (int fd)
 {
-  return;
+  struct fd_entry *fd_entry;
+  struct list *fd_table;
+
+  struct list_elem *e;
+  bool found = false;
+
+  fd_table = &thread_current()->fd_table_list;
+  for (e = list_begin(fd_table); e != list_end(fd_table); e = list_next(e))
+  {
+    fd_entry = list_entry(e, struct fd_entry, fd_table_elem);
+    if (fd_entry->fd == fd)
+    {
+      found = true;
+      break;
+    }
+  }
+
+  if(!found || !fd_entry)
+    return;
+  lock_acquire(&filesys_lock);
+  file_close(fd_entry->file);
+  list_remove(&fd_entry->fd_table_elem);
+  palloc_free_page(fd_entry);
+  lock_release(&filesys_lock);
 }
 
 static
