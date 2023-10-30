@@ -6,6 +6,7 @@
 
 /************* Project 2-3 System Call *************/
 struct lock filesys_lock;
+void fd_entry_init (struct fd_entry *fd_entry, struct file *file, struct list *fd_table_list);
 /***************************************************/
 static void syscall_handler (struct intr_frame *);
 
@@ -179,15 +180,21 @@ open (const char *file)
   // Returns a file descriptor
   // If file is not valid (could not open), return -1
   struct file *f;
-  //struct fi
+  struct fd_entry *fd_entry = palloc_get_page(0);
 
+  if(!fd_entry)
+    return -1;
   lock_acquire(&filesys_lock);
   f = filesys_open(file);
-  if(!f)
-  {
+  if(!f){
+    palloc_free_page(fd_entry);
     lock_release(&filesys_lock);
     return -1;
   }
+
+  fd_entry_init(fd_entry, f, &thread_current()->fd_table_list);
+  list_push_back(&thread_current()->fd_table_list, &fd_entry->fd_table_elem);
+  lock_release(&filesys_lock);
 }
 
 int
@@ -248,6 +255,18 @@ tell (int fd)
 void
 close (int fd)
 {
+  return;
+}
+
+static
+void fd_entry_init (struct fd_entry *fd_entry, struct file *file, struct list *fd_table_list)
+{
+  if(list_empty(fd_table_list))
+    fd_entry->fd = 2;
+  else
+    fd_entry->fd = (list_entry(list_back(fd_table_list), struct fd_entry, fd_table_elem)->fd) + 1;
+  
+  fd_entry->file = file;
   return;
 }
 /***************************************************/
