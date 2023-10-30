@@ -22,11 +22,11 @@ syscall_handler (struct intr_frame *f UNUSED)
 {
   /************* Project 2-3 System Call *************/
   is_accessing_user_memory(f->esp);
-  uintptr_t *sysnum_addr = f->esp;
-  int sysnum = *sysnum_addr;
+  void *sysnum_addr = f->esp;
+  int sysnum = *(int*)sysnum_addr;
   int size_arg = sizeof(uintptr_t);
   int check_end = sizeof(uintptr_t) - 1;
-  
+
   switch (sysnum)
   {
     case SYS_HALT: // 0 args
@@ -35,84 +35,84 @@ syscall_handler (struct intr_frame *f UNUSED)
 
     case SYS_EXIT: // 1 args
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
-      printf("EXIT\n");
-      exit((int)*(sysnum_addr + 1 * size_arg));
+      //printf("EXIT\n");
+      exit(*(int*)(sysnum_addr + 1 * size_arg));
       break;
 
     case SYS_EXEC: // 1 args
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
-      printf("EXEC\n");
-      f->eax = exec((const char *)*(sysnum_addr + 1 * size_arg));
+      //printf("EXEC\n");
+      f->eax = exec(*(const char*)(sysnum_addr + 1 * size_arg));
       break;
 
     case SYS_WAIT: // 1 args
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
-      printf("WAIT\n");
-      f->eax = wait((pid_t)*(sysnum_addr + 1 * size_arg));
+      //printf("WAIT\n");
+      f->eax = wait(*(pid_t*)(sysnum_addr + 1 * size_arg));
       break;
 
     case SYS_CREATE: // 2 args
       is_accessing_user_memory(sysnum_addr + 2 * size_arg + check_end);
-      printf("CREATE\n");
-      f->eax = create((const char *)*(sysnum_addr + 1 * size_arg), (unsigned)*(sysnum_addr + 2 * size_arg));
+      //printf("CREATE\n");
+      f->eax = create(*(const char *)(sysnum_addr + 1 * size_arg), *(unsigned*)(sysnum_addr + 2 * size_arg));
       break;
 
     case SYS_REMOVE: // 1 args
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
-      printf("REMOVE\n");
-      f->eax = remove((const char *)*(sysnum_addr + 1 * size_arg));
+      //printf("REMOVE\n");
+      f->eax = remove(*(const char *)(sysnum_addr + 1 * size_arg));
       break;
 
     case SYS_OPEN: // 1 args
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
-      printf("OPEN\n");
-      f->eax = open((const char *)*(sysnum_addr + 1 * size_arg));
+      //printf("OPEN\n");
+      f->eax = open(*(const char *)(sysnum_addr + 1 * size_arg));
       break;
 
     case SYS_FILESIZE: // 1 args
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
-      printf("FILESIZE\n");
-      f->eax = filesize((int)*(sysnum_addr + 1 * size_arg));
+      //printf("FILESIZE\n");
+      f->eax = filesize(*(int*)(sysnum_addr + 1 * size_arg));
       break;
     
     case SYS_READ: // 3 args
       is_accessing_user_memory(sysnum_addr + 3 * size_arg + check_end);
-      printf("READ\n");
-      f->eax = read((int)*(sysnum_addr + 1 * size_arg), (void *)*(sysnum_addr + 2 * size_arg), (unsigned)*(sysnum_addr + 3 * size_arg));
+      //printf("READ\n");
+      f->eax = read(*(int*)(sysnum_addr + 1 * size_arg), *(void**)(sysnum_addr + 2 * size_arg), *(unsigned*)(sysnum_addr + 3 * size_arg));
       break;
 
     case SYS_WRITE: // 3 args
       is_accessing_user_memory(sysnum_addr + 3 * size_arg + check_end);
-      printf("WRITE\n");
-      f->eax = write((int)*(sysnum_addr + 1 * size_arg), (const void *)*(sysnum_addr + 2 * size_arg), (unsigned)*(sysnum_addr + 3 * size_arg));
+      //printf("WRITE\n");
+      f->eax = write(*(int*)(sysnum_addr + 1 * size_arg), *(const void**)(sysnum_addr + 2 * size_arg), *(unsigned*)(sysnum_addr + 3 * size_arg));
       break;
 
     case SYS_SEEK: // 2 args
       is_accessing_user_memory(sysnum_addr + 2 * size_arg + check_end);
-      printf("SEEK\n");
-      seek((int)*(sysnum_addr + 1 * size_arg), (unsigned)*(sysnum_addr + 2 * size_arg));
+      //printf("SEEK\n");
+      seek(*(int*)(sysnum_addr + 1 * size_arg), *(unsigned*)(sysnum_addr + 2 * size_arg));
       break;
 
     case SYS_TELL: // 1 args
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
-      printf("TELL\n");
-      f->eax = tell((int)*(sysnum_addr + 1 * size_arg));
+      //printf("TELL\n");
+      f->eax = tell(*(int*)(sysnum_addr + 1 * size_arg));
       break;
 
     case SYS_CLOSE: // 1 args
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
-      printf("CLOSE\n");
-      close((int)*(sysnum_addr + 1 * size_arg));
+      //printf("CLOSE\n");
+      close(*(int*)(sysnum_addr + 1 * size_arg));
       break;
 
     default:
-      printf("DEFAULT\n");
+      //printf("DEFAULT\n");
       exit(-1);
   }
   /***************************************************/
   
-  printf("system call!\n");
-  thread_exit();
+  // printf("system call!\n");
+  // thread_exit();
 }
 
 /************* Project 2-3 System Call *************/
@@ -283,8 +283,7 @@ int
 write (int fd, const void *buffer, unsigned size)
 {
   is_accessing_user_memory(buffer);
-  is_accessing_user_memory(buffer + size);
-  
+  is_accessing_user_memory(buffer + size - 1);
   struct fd_entry *fd_entry;
   struct list *fd_table;
   int write_bytes;
@@ -308,12 +307,14 @@ write (int fd, const void *buffer, unsigned size)
       break;
     }
   }
-
+  if (found == false) fd_entry = NULL;
+  //printf("FOUND = %d\n", found);
   if (found == true && fd_entry != NULL)
   {
     lock_acquire(&filesys_lock);
     write_bytes = (int)file_write(fd_entry->file, buffer, size);
     lock_release(&filesys_lock);
+    //printf("FILE WRITE: WRITE BYTES = %d\n", write_bytes);
   }
   else write_bytes = -1;
   return write_bytes;

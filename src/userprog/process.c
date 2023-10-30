@@ -109,7 +109,7 @@ start_process (void *pcb_)
   /********************************************************/
 
   /************* Project 2-2 Argument Passing *************/
-  hex_dump(if_.esp, if_.esp, 200, true);
+  // hex_dump(if_.esp, if_.esp, 80, true);
   /********************************************************/
 
   /* If load failed, quit. */
