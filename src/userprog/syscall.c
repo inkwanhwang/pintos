@@ -238,7 +238,7 @@ read (int fd, void *buffer, unsigned size)
 
   struct list_elem *e;
   bool found = false;
-  off_t bytes_read;
+  off_t read_bytes;
 
   if(fd == 0)
   {
@@ -261,9 +261,9 @@ read (int fd, void *buffer, unsigned size)
   if(!found || !fd_entry)
     return -1;
   lock_acquire(&filesys_lock);
-  bytes_read = file_read(fd_entry->file, buffer, (off_t)size);
+  read_bytes = file_read(fd_entry->file, buffer, (off_t)size);
   lock_release(&filesys_lock);
-  return bytes_read;
+  return read_bytes;
 }
 
 int
