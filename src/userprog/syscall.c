@@ -250,7 +250,32 @@ seek (int fd, unsigned position)
 unsigned
 tell (int fd)
 {
-  return 0;
+  struct fd_entry *fd_entry;
+  struct list *fd_table;
+  unsigned position;
+
+  struct list_elem *e;
+  bool found = false;
+
+  fd_table = &thread_current()->fd_table_list;
+  for (e = list_begin(fd_table); e != list_end(fd_table); e = list_next(e))
+  {
+    fd_entry = list_entry(e, struct fd_entry, fd_table_elem);
+    if (fd_entry->fd == fd)
+    {
+      found = true;
+      break;
+    }
+  }
+
+  if (found == true && fd_entry != NULL)
+  {
+    lock_acquire(&filesys_lock);
+    position = (unsigned) file_tell(fd_entry->file);
+    lock_release(&filesys_lock);
+  }
+  else position = -1;
+  return position;
 }
 
 void
