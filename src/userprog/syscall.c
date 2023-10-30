@@ -195,6 +195,7 @@ open (const char *file)
   fd_entry_init(fd_entry, f, &thread_current()->fd_table_list);
   list_push_back(&thread_current()->fd_table_list, &fd_entry->fd_table_elem);
   lock_release(&filesys_lock);
+  return fd_entry->fd;
 }
 
 int
