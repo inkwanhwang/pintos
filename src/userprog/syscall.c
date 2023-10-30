@@ -238,12 +238,70 @@ read (int fd, void *buffer, unsigned size)
 int
 write (int fd, const void *buffer, unsigned size)
 {
-  return 0;
+  is_accessing_user_memory(buffer);
+  is_accessing_user_memory(buffer + size);
+  
+  struct fd_entry *fd_entry;
+  struct list *fd_table;
+  int write_bytes;
+
+  if (fd == 1) // STDOUT
+  {
+    putbuf(buffer, size);
+    write_bytes = size;
+  }
+
+  struct list_elem *e;
+  bool found = false;
+
+  fd_table = &thread_current()->fd_table_list;
+  for (e = list_begin(fd_table); e != list_end(fd_table); e = list_next(e))
+  {
+    fd_entry = list_entry(e, struct fd_entry, fd_table_elem);
+    if (fd_entry->fd == fd)
+    {
+      found = true;
+      break;
+    }
+  }
+
+  if (found == true && fd_entry != NULL)
+  {
+    lock_acquire(&filesys_lock);
+    write_bytes = (int)file_write(fd_entry->file, buffer, size);
+    lock_release(&filesys_lock);
+  }
+  else write_bytes = -1;
+  return write_bytes;
 }
 
 void
 seek (int fd, unsigned position)
 {
+  struct fd_entry *fd_entry;
+  struct list *fd_table;
+
+  struct list_elem *e;
+  bool found = false;
+  off_t position = position;
+  
+  fd_table = &thread_current()->fd_table_list;
+  for (e = list_begin(fd_table); e != list_end(fd_table); e = list_next(e))
+  {
+    fd_entry = list_entry(e, struct fd_entry, fd_table_elem);
+    if (fd_entry->fd == fd)
+    {
+      found = true;
+      break;
+    }
+  }
+  
+  if (found == true && fd_entry != NULL)
+  {
+    lock_acquire(&filesys_lock);
+    file_seek(fd_entry->file, position);
+    lock_release(&filesys_lock);
+  }
   return;
 }
 
