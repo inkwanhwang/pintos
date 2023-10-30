@@ -102,7 +102,6 @@ struct thread
     struct list children_list;
     
     struct list fd_table_list;
-    int fd_next;
 //#endif
    /********************************************************/
 
