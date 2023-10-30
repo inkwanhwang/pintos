@@ -24,6 +24,13 @@ struct pcb
     struct semaphore load_sema;
     bool load_done;
 };
+
+struct fd_entry
+{
+    struct list_elem fd_table_elem;
+    int fd;
+    struct file *file;
+};
 /********************************************************/
 
 tid_t process_execute (const char *file_name);
