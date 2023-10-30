@@ -314,7 +314,6 @@ seek (int fd, unsigned position)
 
   struct list_elem *e;
   bool found = false;
-  off_t position = position;
   
   fd_table = &thread_current()->fd_table_list;
   for (e = list_begin(fd_table); e != list_end(fd_table); e = list_next(e))
@@ -330,7 +329,7 @@ seek (int fd, unsigned position)
   if (found == true && fd_entry != NULL)
   {
     lock_acquire(&filesys_lock);
-    file_seek(fd_entry->file, position);
+    file_seek(fd_entry->file, (off_t)position);
     lock_release(&filesys_lock);
   }
   return;
