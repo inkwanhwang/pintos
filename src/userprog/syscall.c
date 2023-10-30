@@ -7,14 +7,19 @@
 #include "threads/vaddr.h"
 #include "userprog/pagedir.h"
 #include "userprog/process.h"
+#include "filesys/filesys.h"
 /***************************************************/
 
+/************* Project 2-3 System Call *************/
+struct lock filesys_lock;
+/***************************************************/
 static void syscall_handler (struct intr_frame *);
 
 void
 syscall_init (void) 
 {
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
+  lock_init(&filesys_lock);
 }
 
 static void
@@ -159,19 +164,36 @@ wait (pid_t pid)
 bool
 create (const char *file, unsigned initial_size)
 {
-  return false;
+  lock_acquire(&filesys_lock);
+  bool success = filesys_create(file, (off_t)initial_size);
+  lock_release(&filesys_lock);
+  return success;
 }
 
 bool
 remove (const char *file)
 {
-  return false;
+  lock_acquire(&filesys_lock);
+  bool success = filesys_remove(file);
+  lock_release(&filesys_lock);
+  return success;
 }
 
 int
 open (const char *file)
 {
-  return 0;
+  // Returns a file descriptor
+  // If file is not valid (could not open), return -1
+  struct file *f;
+  //struct fi
+
+  lock_acquire(&filesys_lock);
+  f = filesys_open(file);
+  if(!f)
+  {
+    lock_release(&filesys_lock);
+    return -1;
+  }
 }
 
 int
