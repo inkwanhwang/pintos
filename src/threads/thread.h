@@ -94,16 +94,17 @@ struct thread
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
-   /*************** Project 2-3 System call ****************/
 //#ifdef USERPROG
     /* Owned by userprog/process.c. */
+    /*************** Project 2-3 System call ****************/
     uint32_t *pagedir;                  /* Page directory. */
     struct pcb *pcb;
     struct list children_list;
-    
     struct list fd_table_list;
+    /******* Project 2-4 Denying Writes to Executables ******/
+    struct file *executable_file;
+    /********************************************************/
 //#endif
-   /********************************************************/
 
     /* Owned by thread.c. */
     unsigned magic;                     /* Detects stack overflow. */
