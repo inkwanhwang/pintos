@@ -165,15 +165,21 @@ exec (const char *cmd_line)
 	is_accessing_user_memory(cmd_line);
   is_safe_access(cmd_line);
 
-	pid_t pid = process_execute(cmd_line);
-
+  int cmd_size = strlen(cmd_line) + 1;
+  char *file_name = palloc_get_page(0);
+  strlcpy(file_name, cmd_line, cmd_size);
+  //is_accessing_user_memory(file_name);
+  //is_safe_access(file_name);
+	pid_t pid = process_execute(file_name);
+  palloc_free_page(file_name);
   for(e = list_begin(&thread_current()->children_list); e != list_end(&thread_current()->children_list); e = list_next(e))
   {
     child = list_entry(e, struct pcb, children_elem);
+    if (pid == child->pid) break;
   }
   // pid가 잘못되거나, child pocess가 load 되지 않으면 -1 리턴
 	if(child == NULL || child->load_done == false){
-		return -1;
+		pid = -1;
 	}
 	return pid;
 }

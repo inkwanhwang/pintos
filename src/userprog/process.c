@@ -33,7 +33,6 @@ tid_t
 process_execute (const char *file_name) 
 {
   char *fn_copy;
-  char *thread_name;
   char *save_ptr;
   tid_t tid;
 
@@ -50,7 +49,7 @@ process_execute (const char *file_name)
   /********************************************************/
   
   /************* Project 2-2 Argument Passing *************/
-  thread_name = strtok_r(file_name, " ", &save_ptr);
+  char *thread_name = strtok_r(file_name, " ", &save_ptr);
   /********************************************************/
   
   /* Create a new thread to execute FILE_NAME. */
@@ -66,7 +65,7 @@ process_execute (const char *file_name)
   else
   {
     sema_down(&pcb->load_sema);
-    if (pcb->load_done != false && pcb->pid != -1)
+    if (pcb->load_done != false || pcb->pid != -1)
     {
       list_push_back(&thread_current()->children_list, &pcb->children_elem);
     }
