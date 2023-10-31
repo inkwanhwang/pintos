@@ -149,12 +149,6 @@ page_fault (struct intr_frame *f)
   write = (f->error_code & PF_W) != 0;
   user = (f->error_code & PF_U) != 0;
 
-   if (!user)
-   {
-      f->eip = f->eax;
-      f->eax = -1;
-      return;
-   }
    if (user)
    {
       printf("%s: exit(%d)\n", thread_name(), -1);

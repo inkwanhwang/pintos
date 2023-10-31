@@ -33,6 +33,8 @@ tid_t
 process_execute (const char *file_name) 
 {
   char *fn_copy;
+  char *thread_name;
+  char *save_ptr;
   tid_t tid;
 
   /* Make a copy of FILE_NAME.
@@ -48,8 +50,7 @@ process_execute (const char *file_name)
   /********************************************************/
   
   /************* Project 2-2 Argument Passing *************/
-  char* save_ptr;
-  char* thread_name = strtok_r(file_name, " ", &save_ptr);
+  thread_name = strtok_r(file_name, " ", &save_ptr);
   /********************************************************/
   
   /* Create a new thread to execute FILE_NAME. */
@@ -65,10 +66,11 @@ process_execute (const char *file_name)
   else
   {
     sema_down(&pcb->load_sema);
-    if (pcb->pid != -1)
+    if (pcb->load_done != false && pcb->pid != -1)
     {
       list_push_back(&thread_current()->children_list, &pcb->children_elem);
     }
+    else palloc_free_page (pcb);
   }
   /********************************************************/
   return tid;
@@ -102,6 +104,7 @@ start_process (void *pcb_)
   argc = parse_argument(argv, file_name);
 
   success = load (argv[0], &if_.eip, &if_.esp);
+  pcb->pid = success ? thread_tid() : -1;
   pcb->load_done = success;
   if(success)
     set_stack(argc, argv, &if_.esp);
@@ -623,10 +626,10 @@ void
 init_pcb (struct pcb *pcb, char *filename)
 {
   pcb->filename = filename;
-  // pcb->pid
+  pcb->pid = thread_tid();
   pcb->exit_code = -1;
 
-  // pcb->children_elem
+  //list_init(&pcb->children_elem);
   pcb->parent = thread_current();
   
   sema_init(&pcb->exit_sema, 0);
