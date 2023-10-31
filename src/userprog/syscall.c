@@ -4,17 +4,13 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 
-/************* Project 2-3 System Call *************/
-static struct lock filesys_lock;
-static void fd_entry_init (struct fd_entry *fd_entry, struct file *file, struct list *fd_table_list);
-/***************************************************/
 static void syscall_handler (struct intr_frame *);
 
 void
 syscall_init (void) 
 {
-  intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
   lock_init(&filesys_lock);
+  intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
 static void
@@ -35,72 +31,90 @@ syscall_handler (struct intr_frame *f UNUSED)
       break;
 
     case SYS_EXIT: // 1 args
+      // is_accessing_user_memory(sysnum_addr + 1 * size_arg);
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
       //printf("EXIT\n");
       exit(*(int*)(sysnum_addr + 1 * size_arg));
       break;
 
     case SYS_EXEC: // 1 args
+      // is_accessing_user_memory(sysnum_addr + 1 * size_arg);
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
       //printf("EXEC\n");
       f->eax = exec(*(const char**)(sysnum_addr + 1 * size_arg));
       break;
 
     case SYS_WAIT: // 1 args
+      // is_accessing_user_memory(sysnum_addr + 1 * size_arg);
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
       //printf("WAIT\n");
       f->eax = wait(*(pid_t*)(sysnum_addr + 1 * size_arg));
       break;
 
     case SYS_CREATE: // 2 args
+      // is_accessing_user_memory(sysnum_addr + 1 * size_arg);
+      // is_accessing_user_memory(sysnum_addr + 2 * size_arg);
       is_accessing_user_memory(sysnum_addr + 2 * size_arg + check_end);
       //printf("CREATE\n");
       f->eax = create(*(const char**)(sysnum_addr + 1 * size_arg), *(unsigned*)(sysnum_addr + 2 * size_arg));
       break;
 
     case SYS_REMOVE: // 1 args
+      // is_accessing_user_memory(sysnum_addr + 1 * size_arg);
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
       //printf("REMOVE\n");
       f->eax = remove(*(const char**)(sysnum_addr + 1 * size_arg));
       break;
 
     case SYS_OPEN: // 1 args
+      // is_accessing_user_memory(sysnum_addr + 1 * size_arg);
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
       //printf("OPEN\n");
       f->eax = open(*(const char**)(sysnum_addr + 1 * size_arg));
       break;
 
     case SYS_FILESIZE: // 1 args
+      // is_accessing_user_memory(sysnum_addr + 1 * size_arg);
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
       //printf("FILESIZE\n");
       f->eax = filesize(*(int*)(sysnum_addr + 1 * size_arg));
       break;
     
     case SYS_READ: // 3 args
+      // is_accessing_user_memory(sysnum_addr + 1 * size_arg);
+      // is_accessing_user_memory(sysnum_addr + 2 * size_arg);
+      // is_accessing_user_memory(sysnum_addr + 3 * size_arg);
       is_accessing_user_memory(sysnum_addr + 3 * size_arg + check_end);
       //printf("READ\n");
       f->eax = read(*(int*)(sysnum_addr + 1 * size_arg), *(void**)(sysnum_addr + 2 * size_arg), *(unsigned*)(sysnum_addr + 3 * size_arg));
       break;
 
     case SYS_WRITE: // 3 args
+      // is_accessing_user_memory(sysnum_addr + 1 * size_arg);
+      // is_accessing_user_memory(sysnum_addr + 2 * size_arg);
+      // is_accessing_user_memory(sysnum_addr + 3 * size_arg);
       is_accessing_user_memory(sysnum_addr + 3 * size_arg + check_end);
       //printf("WRITE\n");
       f->eax = write(*(int*)(sysnum_addr + 1 * size_arg), *(const void**)(sysnum_addr + 2 * size_arg), *(unsigned*)(sysnum_addr + 3 * size_arg));
       break;
 
     case SYS_SEEK: // 2 args
+      // is_accessing_user_memory(sysnum_addr + 1 * size_arg);
+      // is_accessing_user_memory(sysnum_addr + 2 * size_arg);
       is_accessing_user_memory(sysnum_addr + 2 * size_arg + check_end);
       //printf("SEEK\n");
       seek(*(int*)(sysnum_addr + 1 * size_arg), *(unsigned*)(sysnum_addr + 2 * size_arg));
       break;
 
     case SYS_TELL: // 1 args
+      // is_accessing_user_memory(sysnum_addr + 1 * size_arg);
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
       //printf("TELL\n");
       f->eax = tell(*(int*)(sysnum_addr + 1 * size_arg));
       break;
 
     case SYS_CLOSE: // 1 args
+      // is_accessing_user_memory(sysnum_addr + 1 * size_arg);
       is_accessing_user_memory(sysnum_addr + 1 * size_arg + check_end);
       //printf("CLOSE\n");
       close(*(int*)(sysnum_addr + 1 * size_arg));
@@ -149,9 +163,9 @@ exec (const char *cmd_line)
   struct list_elem *e;
   struct pcb *child = NULL;
 	is_accessing_user_memory(cmd_line);
+  is_safe_access(cmd_line);
 
 	pid_t pid = process_execute(cmd_line);
-
 
   for(e = list_begin(&thread_current()->children_list); e != list_end(&thread_current()->children_list); e = list_next(e))
   {
@@ -177,7 +191,7 @@ create (const char *file, unsigned initial_size)
   //printf("@@ INITIAL_SIZE : %d \n", initial_size);
   if (file == NULL) exit(-1);
   is_accessing_user_memory(file);
-  is_safe_arg(file);
+  is_safe_access(file);
   
   lock_acquire(&filesys_lock);
   bool success = filesys_create(file, (off_t)initial_size);
@@ -189,9 +203,8 @@ bool
 remove (const char *file)
 {
   if (file == NULL) exit(-1);
-  int filename_size;
   is_accessing_user_memory(file);
-  is_safe_arg(file);
+  is_safe_access(file);
   
   lock_acquire(&filesys_lock);
   bool success = filesys_remove(file);
@@ -204,14 +217,14 @@ open (const char *file)
 {
   // Returns a file descriptor
   // If file is not valid (could not open), return -1
+  is_accessing_user_memory(file);
+  is_safe_access(file);
+  
   struct file *f;
   struct fd_entry *fd_entry = palloc_get_page(0);
 
-  is_accessing_user_memory(file);
-  is_safe_arg(file);
+  if(!fd_entry) return -1;
 
-  if(!fd_entry)
-    return -1;
   lock_acquire(&filesys_lock);
   f = filesys_open(file);
   if(!f){
@@ -260,6 +273,8 @@ filesize (int fd)
 int
 read (int fd, void *buffer, unsigned size)
 {
+  is_accessing_user_memory(buffer);
+  is_safe_access_with_size(buffer, size);
   int i;
   struct fd_entry *fd_entry;
   struct list *fd_table;
@@ -298,7 +313,8 @@ int
 write (int fd, const void *buffer, unsigned size)
 {
   is_accessing_user_memory(buffer);
-  is_accessing_user_memory(buffer + size - 1);
+  is_safe_access_with_size(buffer, size);
+
   struct fd_entry *fd_entry;
   struct list *fd_table;
   int write_bytes;
@@ -361,7 +377,7 @@ seek (int fd, unsigned position)
     file_seek(fd_entry->file, (off_t)position);
     lock_release(&filesys_lock);
   }
-  return;
+  else return;
 }
 
 unsigned
@@ -377,6 +393,7 @@ tell (int fd)
   fd_table = &thread_current()->fd_table_list;
   for (e = list_begin(fd_table); e != list_end(fd_table); e = list_next(e))
   {
+    if (e == NULL) break;
     fd_entry = list_entry(e, struct fd_entry, fd_table_elem);
     if (fd_entry->fd == fd)
     {
@@ -407,6 +424,7 @@ close (int fd)
   fd_table = &thread_current()->fd_table_list;
   for (e = list_begin(fd_table); e != list_end(fd_table); e = list_next(e))
   {
+    if (e == NULL) break;
     fd_entry = list_entry(e, struct fd_entry, fd_table_elem);
     if (fd_entry->fd == fd)
     {
@@ -437,13 +455,25 @@ void fd_entry_init (struct fd_entry *fd_entry, struct file *file, struct list *f
 }
 
 static void
-is_safe_arg (char *input)
+is_safe_access (char *input)
 {
   int i = 1;
-  int size = 128;
+  int size = 126;
   while (i < size)
   {
-    if ((input + i - 1) == NULL) return;
+    if ((input + i - 1) == NULL) break;
+    is_accessing_user_memory(input + i);
+    i++;
+  }
+}
+
+static void
+is_safe_access_with_size (char *input, unsigned size)
+{
+  int i = 1;
+  while (i < size)
+  {
+    if ((input + i - 1) == NULL) break;
     is_accessing_user_memory(input + i);
     i++;
   }
