@@ -32,13 +32,12 @@ static void set_stack(int argc, char **argv, void **esp);
 tid_t
 process_execute (const char *file_name) 
 {
-  char *fn_copy;
   char *save_ptr;
   tid_t tid;
 
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
-  fn_copy = palloc_get_page (0);
+  char *fn_copy = palloc_get_page (0);
   if (fn_copy == NULL)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
@@ -107,6 +106,7 @@ start_process (void *pcb_)
   pcb->load_done = success;
   if(success)
     set_stack(argc, argv, &if_.esp);
+  
   sema_up(&pcb->load_sema);
   /********************************************************/
 
@@ -171,53 +171,75 @@ process_exit (void)
 {
   struct thread *cur = thread_current ();
   uint32_t *pd;
+  struct fd_entry *fde;
 
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
   pd = cur->pagedir;
   if (pd != NULL) 
+  {
+    /* Correct ordering here is crucial.  We must set
+        cur->pagedir to NULL before switching page directories,
+        so that a timer interrupt can't switch back to the
+        process page directory.  We must activate the base page
+        directory before destroying the process's page
+        directory, or our active page directory will be one
+        that's been freed (and cleared). */
+    /*************** Project 2-3 System call ****************/
+    struct list_elem *e;
+    struct pcb *child;
+    cur->pcb->exit_done = true;
+    
+    for (e = list_begin(&cur->children_list); e != list_end(&cur->children_list); e = list_next(e))
     {
-      /* Correct ordering here is crucial.  We must set
-         cur->pagedir to NULL before switching page directories,
-         so that a timer interrupt can't switch back to the
-         process page directory.  We must activate the base page
-         directory before destroying the process's page
-         directory, or our active page directory will be one
-         that's been freed (and cleared). */
-      /*************** Project 2-3 System call ****************/
-      struct list_elem *e;
-      struct pcb *child;
-      
-      cur->pcb->exit_done = true;
-      
-      for (e = list_begin(&cur->children_list); e != list_end(&cur->children_list); e = list_next(e))
+      child = list_entry(e, struct pcb, children_elem);
+      if (child != NULL)
       {
-        child = list_entry(e, struct pcb, children_elem);
-        if (child != NULL)
+        while(!list_empty(&child->fd_table_list))
         {
-          list_remove(&child->children_elem);
-          child->parent = NULL;
-          if (child->exit_done == true)
-          {
-            palloc_free_page(child);
-          }
+          fde = list_entry(list_pop_front(&child->fd_table_list), struct fd_entry, fd_table_elem);
+          if (!fde) continue;
+          lock_acquire(&filesys_lock);
+          file_close(fde->file);
+          list_remove(&fde->fd_table_elem);
+          palloc_free_page(fde);
+          lock_release(&filesys_lock);
         }
+        list_remove(&child->children_elem);
+        child->parent = NULL;
+        lock_acquire(&filesys_lock);
+        palloc_free_page(child);
+        lock_release(&filesys_lock);
       }
-      sema_up(&cur->pcb->exit_sema);
-      if (cur->pcb != NULL && cur->pcb->parent == NULL)
-      {
-        palloc_free_page(cur->pcb);
-      }
-      if (cur->pagedir != NULL)
-      {
-        cur->pagedir = NULL;
-        pagedir_activate (NULL);
-        pagedir_destroy (pd);
-      }
-      /******* Project 2-4 Denying Writes to Executables ******/
-      file_close (cur->executable_file);
-      /********************************************************/
     }
+  }
+  sema_up(&cur->pcb->exit_sema);
+
+  if (cur->pcb != NULL && cur->pcb->parent == NULL)
+  {
+    while(!list_empty(&cur->pcb->fd_table_list))
+    {
+      fde = list_entry(list_pop_front(&cur->pcb->fd_table_list), struct fd_entry, fd_table_elem);
+      if(!fde) continue;
+      lock_acquire(&filesys_lock);
+      file_close(fde->file);
+      list_remove(&fde->fd_table_elem);
+      palloc_free_page(fde);
+      lock_release(&filesys_lock);
+    }
+    lock_acquire(&filesys_lock);
+    palloc_free_page(cur->pcb);
+    lock_release(&filesys_lock);
+  }
+  if (cur->pagedir != NULL)
+  {
+    cur->pagedir = NULL;
+    pagedir_activate (NULL);
+    pagedir_destroy (pd);
+  }
+  /******* Project 2-4 Denying Writes to Executables ******/
+  file_close (cur->executable_file);
+  /********************************************************/
 }
 
 /* Sets up the CPU for running user code in the current
@@ -628,6 +650,7 @@ init_pcb (struct pcb *pcb, char *filename)
   pcb->pid = thread_tid();
   pcb->exit_code = -1;
 
+  list_init(&pcb->fd_table_list);
   //list_init(&pcb->children_elem);
   pcb->parent = thread_current();
   

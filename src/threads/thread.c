@@ -472,7 +472,7 @@ init_thread (struct thread *t, const char *name, int priority)
 #ifdef USERPROG
   t->pcb = NULL;
   list_init(&t->children_list);
-  list_init(&t->fd_table_list);
+  //list_init(&t->fd_table_list);
 #endif
 /********************************************************/
 }

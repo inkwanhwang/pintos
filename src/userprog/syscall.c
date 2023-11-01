@@ -239,8 +239,8 @@ open (const char *file)
     return -1;
   }
 
-  fd_entry_init(fd_entry, f, &thread_current()->fd_table_list);
-  list_push_back(&thread_current()->fd_table_list, &fd_entry->fd_table_elem);
+  fd_entry_init(fd_entry, f, &thread_current()->pcb->fd_table_list);
+  list_push_back(&thread_current()->pcb->fd_table_list, &fd_entry->fd_table_elem);
   lock_release(&filesys_lock);
   return fd_entry->fd;
 }
@@ -255,7 +255,7 @@ filesize (int fd)
   struct list_elem *e;
   bool found = false;
 
-  fd_table = &thread_current()->fd_table_list;
+  fd_table = &thread_current()->pcb->fd_table_list;
   for (e = list_begin(fd_table); e != list_end(fd_table); e = list_next(e))
   {
     fd_entry = list_entry(e, struct fd_entry, fd_table_elem);
@@ -297,7 +297,7 @@ read (int fd, void *buffer, unsigned size)
     return size;
   }
 
-  fd_table = &thread_current()->fd_table_list;
+  fd_table = &thread_current()->pcb->fd_table_list;
   for (e = list_begin(fd_table); e != list_end(fd_table); e = list_next(e))
   {
     fd_entry = list_entry(e, struct fd_entry, fd_table_elem);
@@ -334,7 +334,7 @@ write (int fd, const void *buffer, unsigned size)
   struct list_elem *e;
   bool found = false;
 
-  fd_table = &thread_current()->fd_table_list;
+  fd_table = &thread_current()->pcb->fd_table_list;
   for (e = list_begin(fd_table); e != list_end(fd_table); e = list_next(e))
   {
     fd_entry = list_entry(e, struct fd_entry, fd_table_elem);
@@ -366,7 +366,7 @@ seek (int fd, unsigned position)
   struct list_elem *e;
   bool found = false;
   
-  fd_table = &thread_current()->fd_table_list;
+  fd_table = &thread_current()->pcb->fd_table_list;
   for (e = list_begin(fd_table); e != list_end(fd_table); e = list_next(e))
   {
     fd_entry = list_entry(e, struct fd_entry, fd_table_elem);
@@ -396,7 +396,7 @@ tell (int fd)
   struct list_elem *e;
   bool found = false;
 
-  fd_table = &thread_current()->fd_table_list;
+  fd_table = &thread_current()->pcb->fd_table_list;
   for (e = list_begin(fd_table); e != list_end(fd_table); e = list_next(e))
   {
     if (e == NULL) break;
@@ -427,7 +427,7 @@ close (int fd)
   struct list_elem *e;
   bool found = false;
 
-  fd_table = &thread_current()->fd_table_list;
+  fd_table = &thread_current()->pcb->fd_table_list;
   for (e = list_begin(fd_table); e != list_end(fd_table); e = list_next(e))
   {
     if (e == NULL) break;

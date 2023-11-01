@@ -16,6 +16,7 @@ struct pcb
     pid_t pid;
     int exit_code;
     
+    struct list fd_table_list;
     struct list_elem children_elem;
     struct thread* parent;
 
@@ -31,6 +32,7 @@ struct fd_entry
     int fd;
     struct file *file;
 };
+static struct lock filesys_lock;
 /********************************************************/
 
 tid_t process_execute (const char *file_name);

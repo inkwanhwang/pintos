@@ -100,7 +100,7 @@ struct thread
     uint32_t *pagedir;                  /* Page directory. */
     struct pcb *pcb;
     struct list children_list;
-    struct list fd_table_list;
+    //struct list fd_table_list;
     /******* Project 2-4 Denying Writes to Executables ******/
     struct file *executable_file;
     /********************************************************/
