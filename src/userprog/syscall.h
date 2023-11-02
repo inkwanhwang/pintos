@@ -15,7 +15,6 @@ typedef int pid_t;
 void syscall_init (void);
 
 /************* Project 2-3 System Call *************/
-
 static void fd_entry_init (struct fd_entry *fd_entry, struct file *file, struct list *fd_table_list);
 int get_fd_size (struct list *fd_table_list);
 void is_accessing_user_memory(const void *vaddr);

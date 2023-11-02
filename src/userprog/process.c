@@ -202,7 +202,11 @@ process_exit (void)
         {
           fde = list_entry(list_pop_front(&child->fd_table_list), struct fd_entry, fd_table_elem);
           if (!fde) continue;
-          close(fde->fd);
+          lock_acquire(&filesys_lock);
+          file_close(fde->file);
+          list_remove(&fde->fd_table_elem);
+          palloc_free_page(fde);
+          lock_release(&filesys_lock);
         }
         list_remove(&child->children_elem);
         child->parent = NULL;
@@ -220,7 +224,11 @@ process_exit (void)
     {
       fde = list_entry(list_pop_front(&cur->pcb->fd_table_list), struct fd_entry, fd_table_elem);
       if(!fde) continue;
-      close(fde->fd);
+      lock_acquire(&filesys_lock);
+      file_close(fde->file);
+      list_remove(&fde->fd_table_elem);
+      palloc_free_page(fde);
+      lock_release(&filesys_lock);
     }
     free(&cur->pcb->fd_table_list);
     palloc_free_page(cur->pcb);

@@ -4,8 +4,9 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 
-static void syscall_handler (struct intr_frame *);
 struct lock filesys_lock;
+static void syscall_handler (struct intr_frame *);
+
 void
 syscall_init (void) 
 {
