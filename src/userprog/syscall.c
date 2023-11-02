@@ -5,7 +5,7 @@
 #include "threads/thread.h"
 
 static void syscall_handler (struct intr_frame *);
-
+struct lock filesys_lock;
 void
 syscall_init (void) 
 {
@@ -448,9 +448,10 @@ close (int fd)
   lock_release(&filesys_lock);
 }
 
-static
-void fd_entry_init (struct fd_entry *fd_entry, struct file *file, struct list *fd_table_list)
+static void
+fd_entry_init (struct fd_entry *fd_entry, struct file *file, struct list *fd_table_list)
 {
+  fd_entry->fd = get_fd_size(fd_table_list);
   if(list_empty(fd_table_list))
     fd_entry->fd = 2;
   else
@@ -459,6 +460,16 @@ void fd_entry_init (struct fd_entry *fd_entry, struct file *file, struct list *f
   fd_entry->file = file;
   return;
 }
+
+int
+get_fd_size (struct list *fd_table_list)
+{
+  if (list_empty(fd_table_list))
+    return 2;
+  else
+    return (list_entry(list_back(fd_table_list), struct fd_entry, fd_table_elem)->fd) + 1;
+}
+
 
 static void
 is_safe_access (char *input)
@@ -483,5 +494,10 @@ is_safe_access_with_size (char *input, unsigned size)
     is_accessing_user_memory(input + i);
     i++;
   }
+}
+
+struct lock *syscall_get_filesys_lock(void)
+{
+    return &filesys_lock;
 }
 /***************************************************/

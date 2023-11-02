@@ -68,7 +68,7 @@ process_execute (const char *file_name)
     {
       list_push_back(&thread_current()->children_list, &pcb->children_elem);
     }
-    else palloc_free_page (pcb);
+    // else palloc_free_page (pcb);
   }
   /********************************************************/
   return tid;
@@ -158,6 +158,8 @@ process_wait (tid_t child_tid UNUSED)
       sema_down(&p->exit_sema);
       status = p->exit_code;
       list_remove(&p->children_elem);
+      // p->parent = NULL;
+      if(p->exit_done) palloc_free_page(p);
       return status;
     }
   }
@@ -172,6 +174,7 @@ process_exit (void)
   struct thread *cur = thread_current ();
   uint32_t *pd;
   struct fd_entry *fde;
+  struct lock *filesys_lock = syscall_get_filesys_lock();
 
   /* Destroy the current process's page directory and switch back
      to the kernel-only page directory. */
@@ -199,20 +202,16 @@ process_exit (void)
         {
           fde = list_entry(list_pop_front(&child->fd_table_list), struct fd_entry, fd_table_elem);
           if (!fde) continue;
-          lock_acquire(&filesys_lock);
-          file_close(fde->file);
-          list_remove(&fde->fd_table_elem);
-          palloc_free_page(fde);
-          lock_release(&filesys_lock);
+          close(fde->fd);
         }
         list_remove(&child->children_elem);
         child->parent = NULL;
-        lock_acquire(&filesys_lock);
-        palloc_free_page(child);
-        lock_release(&filesys_lock);
+        free (&child->fd_table_list);
+        if(child->exit_done)palloc_free_page(child);
       }
     }
   }
+
   sema_up(&cur->pcb->exit_sema);
 
   if (cur->pcb != NULL && cur->pcb->parent == NULL)
@@ -221,16 +220,16 @@ process_exit (void)
     {
       fde = list_entry(list_pop_front(&cur->pcb->fd_table_list), struct fd_entry, fd_table_elem);
       if(!fde) continue;
-      lock_acquire(&filesys_lock);
-      file_close(fde->file);
-      list_remove(&fde->fd_table_elem);
-      palloc_free_page(fde);
-      lock_release(&filesys_lock);
+      close(fde->fd);
     }
-    lock_acquire(&filesys_lock);
+    free(&cur->pcb->fd_table_list);
     palloc_free_page(cur->pcb);
-    lock_release(&filesys_lock);
   }
+///////////
+  int fd = get_fd_size(&cur->pcb->fd_table_list);
+  for (int i = 2; i < fd;  i++)
+    close(i);
+/////////////
   if (cur->pagedir != NULL)
   {
     cur->pagedir = NULL;
@@ -238,7 +237,9 @@ process_exit (void)
     pagedir_destroy (pd);
   }
   /******* Project 2-4 Denying Writes to Executables ******/
+  lock_acquire(filesys_lock);
   file_close (cur->executable_file);
+  lock_release(filesys_lock);
   /********************************************************/
 }
 

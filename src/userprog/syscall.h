@@ -15,9 +15,9 @@ typedef int pid_t;
 void syscall_init (void);
 
 /************* Project 2-3 System Call *************/
-static struct lock filesys_lock;
-static void fd_entry_init (struct fd_entry *fd_entry, struct file *file, struct list *fd_table_list);
 
+static void fd_entry_init (struct fd_entry *fd_entry, struct file *file, struct list *fd_table_list);
+int get_fd_size (struct list *fd_table_list);
 void is_accessing_user_memory(const void *vaddr);
 static void is_safe_access (char *input);
 static void is_safe_access_with_size (char *input, unsigned size);
@@ -35,5 +35,6 @@ int write (int fd, const void *buffer, unsigned size);
 void seek (int fd, unsigned position);
 unsigned tell (int fd);
 void close (int fd);
+struct lock *syscall_get_filesys_lock(void);
 /***************************************************/
 #endif /* userprog/syscall.h */

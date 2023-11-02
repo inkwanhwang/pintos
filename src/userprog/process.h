@@ -32,7 +32,7 @@ struct fd_entry
     int fd;
     struct file *file;
 };
-static struct lock filesys_lock;
+// static struct lock filesys_lock;
 /********************************************************/
 
 tid_t process_execute (const char *file_name);
