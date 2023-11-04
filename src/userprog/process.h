@@ -6,6 +6,7 @@
 #include "threads/thread.h"
 /************** Project 2-3 System Call *****************/
 #include "threads/synch.h"
+#include "syscall.h"
 typedef int pid_t;
 /********************************************************/
 
