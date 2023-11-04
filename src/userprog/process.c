@@ -216,6 +216,12 @@ process_exit (void)
     }
   }
 
+///////////
+  int fd = get_fd_size(&cur->pcb->fd_table_list);
+  for (int i = 2; i < fd;  i++)
+    close(i);
+/////////////
+
   sema_up(&cur->pcb->exit_sema);
 
   if (cur->pcb != NULL && cur->pcb->parent == NULL)
@@ -233,11 +239,7 @@ process_exit (void)
     free(&cur->pcb->fd_table_list);
     palloc_free_page(cur->pcb);
   }
-///////////
-  int fd = get_fd_size(&cur->pcb->fd_table_list);
-  for (int i = 2; i < fd;  i++)
-    close(i);
-/////////////
+
   if (cur->pagedir != NULL)
   {
     cur->pagedir = NULL;
